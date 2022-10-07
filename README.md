@@ -1,5 +1,6 @@
 # syncrpy-tui
 Python Rsync TUI
+### Relies on Paramiko and Curses.
 
 The goal of this TUI is to create an easy to use browser/rsync tool.
 
