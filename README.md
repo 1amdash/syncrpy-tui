@@ -8,10 +8,14 @@ keyboard keys:
 
 q = quit
 
+9 = DELETS FILE OR DIRECTORY
+
 5 = copy
 
 if ssh is activated 5 = rsync
 
-9 = DELETE
+n = make directory
 
-m = make directory
+x = closes an ssh connection if open
+
+tab = switches windows
