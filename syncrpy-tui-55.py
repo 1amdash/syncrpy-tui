@@ -659,7 +659,7 @@ class file_explorer:
             else:
                 mode = curses.A_NORMAL
             try:
-                msg = f'{index:>3}{" "}{items[0]}{items[1]:>{padding}}'
+                msg = f'{index:>3}{" "}{items[0]}{items[1]:>}{padding}'
             except:
                 msg = f'{index:>3}{" "}{items[0]}'
             self.pad.addstr(index, 0, str(msg), mode)
