@@ -1,3 +1,5 @@
+#!/usr/bin/env python3.6
+from asyncio import transports
 import os
 import sys
 import time
@@ -34,7 +36,7 @@ class PopUpBase:
 
 class OptionsMenu(PopUpBase):
     """Popup menu meant to act as a 'preferences/settings' meant to affect the program globally"""
-    menu_items = ['[ ] low bandwidth']
+    menu_items = ['[ ] low bandwidth', '[ ] test item']
     position = 0
     low_bandwidth = None
     def __init__(self):
@@ -66,12 +68,9 @@ class OptionsMenu(PopUpBase):
             ### MenuBar getch
             CH = self.win.getch()
             if CH == curses.KEY_UP:
-                self.navigate(-1)
-                if self.position < 0:
-                    self.position = 0
+                self.position = navigate(-1, self.menu_items, self.position)
             elif CH == curses.KEY_DOWN:
-                if self.position >= 0 and self.position <= len(self.menu_items) - 1:
-                    self.navigate(1)
+                self.position = navigate(1, self.menu_items, self.position)
             elif CH == ord('\n') and self.position == 0:
                 if self.low_bandwidth is True:
                     self.menu_items = ['[ ] low bandwidth']
@@ -88,13 +87,39 @@ class OptionsMenu(PopUpBase):
                 self.win.noutrefresh()
                 curses.doupdate()
                 return 0
-                
-    def navigate(self, n):
-        self.position += n
-        if self.position < 0:
-            self.position = 0
-        elif self.position >= len(self.menu_items):
-            self.position = len(self.menu_items) - 1
+
+def exit_program(window=None):
+    try:
+        ssh_obj.ssh.close()
+        del window
+    except:
+        try:
+            del window
+        except:
+            pass
+        pass
+    del globals()['menu']
+    if file_explorer_0:
+        del globals()['file_explorer_0']
+    if file_explorer_1:
+        del globals()['file_explorer_1']
+    del globals()['window_0']
+    del globals()['window_1']
+    del globals()['status']
+    stdscr.keypad(0)
+    curses.echo()
+    curses.nocbreak()
+    curses.endwin()
+    os.system('reset')
+
+def navigate(direction, item, position):
+    item_length = len(item)
+    position += direction
+    if position < 0:
+        position = 0
+    elif position >= item_length:
+        position = item_length - 1
+    return position
 
 class MenuBar(PopUpBase):
     """Creates the menubar
@@ -141,13 +166,6 @@ class MenuBar(PopUpBase):
         stdscr.addstr(0,1, 'File Options', curses.A_NORMAL)
         stdscr.noutrefresh()
 
-    def navigate(self, n):
-        self.position += n
-        if self.position < 0:
-            self.position = 0
-        elif self.position >= len(self.menu_item):
-            self.position = len(self.menu_item) - 1
-
     def display(self):
         self.win.keypad(1)
         while True:
@@ -155,14 +173,11 @@ class MenuBar(PopUpBase):
             ### menuBar getch
             ch = self.win.getch()
             if ch == curses.KEY_UP:
-                self.navigate(-1)
-                if self.position < 0:
-                    self.position = 0
+                self.position = navigate(-1, self.menu_item, self.position)
             elif ch == curses.KEY_DOWN:
-                if self.position >= 0 and self.position <= len(self.menu_item) - 1:
-                    self.navigate(1)
+                self.position = navigate(1, self.menu_item, self.position)
             elif ch == ord('\n') and self.menu_item[self.position] == 'ssh':
-                if ssh_obj.enabled is False:
+                if ssh_obj.is_enabled is False:
                     self.win.erase()
                     del self.win
                     reset_window(file_explorer_0)
@@ -182,8 +197,9 @@ class MenuBar(PopUpBase):
                 glbl_opts.display()
                 return 0
             elif ch == ord('\n') and self.menu_item[self.position] == 'exit':
-                ch = ord('q')
-                return ch
+                return ord('q')
+                #ch = ord('q')
+                #return ch
             elif ch in (ord('f'), ord('o'), ord('\t'), ord('q')):
                 stdscr.addstr(0,1, 'File', curses.A_NORMAL)
                 stdscr.addstr(0,4+2, 'Options', curses.A_NORMAL)
@@ -191,6 +207,7 @@ class MenuBar(PopUpBase):
                 curses.doupdate()
                 reset_window(file_explorer_0)
                 return ch
+
 
 class SSH:
     """
@@ -201,7 +218,7 @@ class SSH:
     use getpass and enter the password.
     """
     def __init__(self):
-        self.enabled = False
+        self.is_enabled = False
         self.server_info = []
         self.ssh = ''
         self.sftp = None
@@ -223,8 +240,8 @@ class SSH:
                 passwd = getpass()
                 print('\nAuthenticating...')
                 self.ssh.connect(form.info[0], username=form.info[1], password=passwd, compress=True)
-                self.transport = self.ssh.get_transport()
-                self.enabled = self.transport.is_active()
+                self.get_transport(self.ssh)
+                self.enabled()
                 self.sftp = self.ssh.open_sftp()
                 wins.set_active_panel(1)
                 status.refresh()
@@ -251,6 +268,15 @@ class SSH:
             file_explorer_1.ssh_explorer('/')
         else:
             pass
+
+    def get_transport(self, ssh):
+        self.transport = ssh.get_transport()
+
+    def enabled(self):
+        if self.transport.is_active():
+            self.is_enabled = True
+        else:
+            self.is_enabled = False
 
 class ssh_form(PopUpBase):
     """PopUp form which relies on PopUpBase and TextBox to create a IP address/username form."""
@@ -407,9 +433,9 @@ class file_explorer:
     through those files. The ssh_explorer method is meant to closely mirror the explorer
     method but is modified for paramiko where appropriate.
     """
-    path = prev_path_0 = prev_path_1 = '/'
-    paths = [None,None]
-    prev_paths = [prev_path_0, prev_path_1]
+    path = '/'
+    paths = [None, None]
+    prev_paths = ['/', '/']
     path_errors = reset_path()
     def __init__(self, stdscr, window, path, is_ssh):
         self.marked_item = None
@@ -425,15 +451,16 @@ class file_explorer:
         self.start_x = start_x + 1
         self.position = 0
         self.scroller = 0
-        self.explorer(path)
-        self.draw_pad()
-        self.event = ''
+        self.event = None
         self.selected_path = ''
         self.ssh_path = None
         self.ssh_path_hist = ['/']
+        self.draw_pad()
+        self.explorer(path)
+        self.menu()
 
     def explorer(self, path):
-        if wins.active_panel == 1 and ssh_obj.enabled == True:
+        if wins.active_panel == 1 and ssh_obj.is_enabled == True:
             #self.ssh_path = path
             file_explorer_1.ssh_explorer(path)
             return 0
@@ -610,22 +637,6 @@ class file_explorer:
                 new_list.append(tups)
         self.marked_item = self.path + '/' + new_list[0][1]
 
-    def del_selected_items(self, sel_file):
-        PopUpDelete(sel_file)
-
-    def copy_selected_items(self):
-        file_name = self.data[self.position][0]
-        left_panel_path = file_explorer_0.abs_path
-        right_panel_path = file_explorer_1.abs_path
-        if wins.active_panel == 0:
-            self.from_file = self.path + '/' + file_name
-            self.to_path = file_explorer_1.path
-        elif wins.active_panel == 1:
-            self.from_file = self.path + '/' + file_name
-            self.to_path = file_explorer_0.path
-        if self.position != 0:
-            PopUpCopyFile(stdscr, self.from_file, self.to_path, file_name)
-
     def start_rsync(self):
         file_name = self.data[self.position][0]
         left_panel_path = file_explorer_0.abs_path
@@ -659,7 +670,7 @@ class file_explorer:
             else:
                 mode = curses.A_NORMAL
             try:
-                msg = f'{index:>3}{" "}{items[0]}{items[1]:>}{padding}'
+                msg = f'{index:>3}{" "}{items[0]}{items[1]:>{padding}}'
             except:
                 msg = f'{index:>3}{" "}{items[0]}'
             self.pad.addstr(index, 0, str(msg), mode)
@@ -667,13 +678,6 @@ class file_explorer:
                 self.cursor = self.pad.getyx()[0]
         self.pad_refresh()
 
-    def navigate(self, n):
-        self.position += n
-        if self.position < 0:
-            self.position = 0
-        elif self.position >= len(self.data):
-            self.position = len(self.data) - 1
-    
     def set_paths(self):
         x = wins.active_panel
         if x == 0:
@@ -685,108 +689,173 @@ class file_explorer:
         else:
             self.prev_paths[x] = self.paths[x]
             self.paths[oth_panel] = self.prev_paths[oth_panel]
+    
+    def go_to_top(self):
+        self.position = 0
+        self.scroller = 0
+
+    def go_to_bottom(self):
+        data_length = len(self.data)
+        self.position = data_length - 1
+        self.scroller = data_length - self.scroll_line - 1
+    
+    def del_selected_items(self, sel_file):
+        PopUpDelete(sel_file)
+
+    def copy_selected_items(self):
+        file_name = self.data[self.position][0]
+        if wins.active_panel == 0:
+            self.from_file = self.path + '/' + file_name
+            self.to_path = file_explorer_1.path
+        elif wins.active_panel == 1:
+            self.from_file = self.path + '/' + file_name
+            self.to_path = file_explorer_0.path
+        if self.position != 0:
+            PopUpCopyFile(stdscr, self.from_file, self.to_path, file_name)
+
+    def scroll(self):
+        if self.cursor > self.scroll_line:
+            self.data_length = len(self.data) - 1
+            if self.position != self.data_length:
+                self.scroller = self.position - self.scroll_line
+        if self.scroller == -1:
+            self.scroller = 0
+        if self.position == 0:
+            self.scroller = 0
+
+    def change_dir(self):
+        dir = self.data[self.position][0]
+        if dir.startswith('/'):
+            is_dir = True
+            dir = dir + '/'
+        else:
+            is_dir = False
+        if self.position != 0 and is_dir is True:
+            if ssh_obj.is_enabled == True and wins.active_panel == 1:
+                self.new_path =  dir
+            else:
+                self.new_path = self.path + dir
+            self.cwd = self.new_path
+            #self.selected_path = self.path + self.data[self.position][0] + '/'
+            self.pad_refresh()
+            self.position = self.scroller = 0
+            self.paths[wins.active_panel] = self.new_path.replace('//','/')
+            self.set_paths()
+            self.explorer(self.new_path)
+        elif self.position != 0 and is_dir is not True:
+            sel_file = self.path + '/' + dir
+            PopUpFileOpener(sel_file, self.screen, None)
+        else:
+            self.cwd = self.new_path = self.par_dir
+            if ssh_obj.is_enabled == True and wins.active_panel == 1:
+                self.par_dir = '..'
+            self.set_paths()
+            self.explorer(self.par_dir)
+        wins.upd_panel()
 
     def display(self):
-        while True:
+        self.event = event = None
+        while event not in (ord('\t'), ord('q'), ord('f'), ord('o')):
             self.pad.keypad(1)
             self.menu()
             curses.doupdate()
-            KEY_PRESS = None
-            try:
-                #self.pad.keypad(1)
-                KEY_PRESS = self.pad.getch()
-            except KeyboardInterrupt:
-                KEY_PRESS = ord('q')
-                self.event = KEY_PRESS
-                break
-            if KEY_PRESS == ord("\n"):
-                if '/' in self.data[self.position][0]:
-                    itsadir = True
-                else:
-                    itsadir = False
-                if self.position != 0 and itsadir == True:
-                    if ssh_obj.enabled == True and wins.active_panel == 1:
-                        self.new_path =  self.data[self.position][0] + '/'
-                    else:
-                        self.new_path = self.path + self.data[self.position][0] + '/'
-                    self.cwd = self.new_path
-                    #self.selected_path = self.path + self.data[self.position][0] + '/'
-                    self.pad_refresh()
-                    self.position = self.scroller = 0
-                    #self.event = KEY_PRESS
-                    self.paths[wins.active_panel] = self.new_path.replace('//','/')
-                    self.set_paths()
-                    self.explorer(self.new_path)
-                    wins.upd_panel()
-                elif self.position != 0 and itsadir == False:
-                    sel_file = self.path + '/' + self.data[self.position][0]
-                    PopUpFileOpener(sel_file, KEY_PRESS,self.screen, None)
-                else:
-                    
-                    self.cwd = self.new_path = self.par_dir
-                    if ssh_obj.enabled == True and wins.active_panel == 1:
-                        self.par_dir = '..'
-                    self.set_paths()
-                    self.explorer(self.par_dir)
-                    wins.upd_panel()
-            elif KEY_PRESS == curses.KEY_UP:
-                self.navigate(-1)
-                if self.cursor > self.scroll_line:
-                    self.scroller  -= 1
-                    if self.scroller == -1:
-                        self.scroller = 0
-                if self.position == 0:
-                    self.scroller = 0
-            elif KEY_PRESS == curses.KEY_DOWN:
-                self.navigate(1)
-                if len(self.data) == 1:
-                    self.position = 0
-                elif self.cursor >= self.scroll_line:
-                    if self.position != len(self.data):
-                        self.scroller = self.cursor - self.scroll_line
-            elif KEY_PRESS == ord('n'):
-                popUpNewDir()
-            #elif KEY_PRESS == ord('m'):
-            #    if self.position != 0:
-            #        self.select_item(self.tup, self.position, '[x]')
-            #elif KEY_PRESS == ord('u'):
-            #    if self.position != 0:
-            #        self.deselect_item(self.tup, self.position, '[ ]')
-           #elif KEY_PRESS == ord ('g'):
-            #    self.get_selected_items(self.tup)
-            elif KEY_PRESS == ord('b'):
-                self.position = len(self.data)-1
-                self.scroller = len(self.data) - self.scroll_line -1                    
-            elif KEY_PRESS == ord('t'):
-                self.position = 0
-                self.scroller = 0
-            elif KEY_PRESS == ord('9'):
-                self.del_selected_items(self.path + '/' + self.data[self.position][0])
-            elif KEY_PRESS == ord('5'):
-                if ssh_obj.enabled == False:
-                    self.copy_selected_items()
-                    reset_window(file_explorer_0)
-                    reset_window(file_explorer_1) 
-                elif ssh_obj.enabled == True:
-                    self.start_rsync()
-            elif KEY_PRESS == ord('x') and ssh_obj.enabled == True:
-                ssh_obj.ssh.close()
-                ssh_obj.enabled = False
-                wins.upd_panel()
-                file_explorer_1.explorer(file_explorer_1.path)
-                file_explorer_1.menu()
-                reset_window(file_explorer_1)
-            elif KEY_PRESS in(ord('f'), ord('o'), ord('q'), ord('\t')):
-                #status.refresh()
-                self.event = KEY_PRESS
-                break
+            event = self.pad.getch()         
+            event = KeyPress.event(KeyPress, event, self, self.data, self.position)
+            self.event = event
 
+class KeyPress:
+    #def __init__(self, explorer):
+    #    self._exp = explorer
+    #    self.event(key_press, items, position)
+
+    def event(self, key_press, explorer, items=None, position=None):
+        self._exp = explorer
+        event = self.key_or_arrow(self, key_press)
+        return event(self, key_press, items, position)
+
+    def key_or_arrow(self, key_press):
+        if key_press in (curses.KEY_LEFT, curses.KEY_RIGHT, curses.KEY_UP, curses.KEY_DOWN):
+            return self.arrow_event
+        else:
+            return self.key_event
+
+    def arrow_event(self, event, items, position):
+        if event == curses.KEY_UP:
+            self._exp.position = navigate(-1, items, position)
+            self._exp.scroll()
+        elif event == curses.KEY_DOWN:
+            self._exp.position = navigate(1, items, position)
+            self._exp.scroll()
+        elif event == curses.KEY_RIGHT:
+            return navigate(1, items, position)
+        elif event == curses.KEY_LEFT:
+            return navigate(-1, items, position)
+    
+    def key_event(self, event, items=None, position=None): 
+        if event == ord('\n'):
+            self.enter_key(self, event)
+        elif event == ord('\t'):
+            return event
+        elif event in (ord('f'), ord('o')):
+            return event
+        elif event == ord('q'):
+            return event
+        elif event == ord('x'):
+            self.close_ssh_key(self, event)
+        elif event == ord('5'):
+            self.copy_key(self,event)
+        elif event == ord('n'):
+            self.new_dir_key()
+        elif event == ord('b'):
+            self.to_bottom_key(self)
+        elif event == ord('t'):
+            self.to_top_key(self)
+        elif event == ord('9'):
+            self.delete_key(items, position)
+        else:
+            pass
+
+    def to_top_key(self):
+        self._exp.go_to_top()
+
+    def to_bottom_key(self):
+        self._exp.go_to_bottom()
+
+    def delete_key(self, items, position):
+        item = items[position][0]
+        self._exp.del_selected_items(self._exp.path + '/' + item)
+
+    def new_dir_key(self, event):
+        self._exp.popUpNewDir()
+
+    def enter_key(self, event):
+        self._exp.change_dir()
+    
+    def close_ssh_key(self,event):
+        if ssh_obj.is_enabled == True:
+            ssh_obj.ssh.close()
+            ssh_obj.enabled()
+            wins.upd_panel()
+            file_explorer_1.explorer(file_explorer_1.path)
+            file_explorer_1.menu()
+            reset_window(file_explorer_1)
+        else:
+            pass
+
+    def copy_key(self,event):
+        if ssh_obj.is_enabled:
+            self._exp.start_rsync()
+        else:
+            self._exp.copy_selected_items()
+            reset_window(file_explorer_0)
+            reset_window(file_explorer_1) 
+    
 def human_readable_size(num, suffix="B"):
     for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
         if abs(int(num)) < 1024.0:
             return f"{num:3.2f}{unit}{suffix}"
         num /= 1024.0
-    return size
+    return num
 
 class reset_window:
     """When called, redraws windows, touched method is not used right now"""
@@ -817,13 +886,6 @@ class button:
         self.window.keypad(1)
         self.menu()
 
-    def navigate(self, n):
-        self.position += n
-        if self.position < 0:
-            self.position = 0
-        elif self.position >= len(self.list):
-            self.position = len(self.list) - 1
-
     def display(self):
         while True:
             self.menu()
@@ -840,9 +902,9 @@ class button:
                 self.action = 1
                 return
             elif KEY_PRESS == curses.KEY_LEFT:
-                self.navigate(-1)
+                self.position = navigate(-1, self.list, self.position)
             elif KEY_PRESS == curses.KEY_RIGHT:
-                self.navigate(1)
+                self.position = navigate(1, self.list, self.position)
             elif KEY_PRESS == ord('\t'):
                 return
 
@@ -895,6 +957,7 @@ class TextBox:
             self.form_ready = 0
             curses.curs_set(0)
             return ch
+        
         else: 
             return ch
 
@@ -1113,7 +1176,7 @@ class StatusBar:
         stdscr.move(height_main-1, 0)
         stdscr.clrtoeol()
         panel = 'active panel: ' + str(wins.active_panel)
-        if ssh_obj.enabled == True:
+        if ssh_obj.is_enabled == True:
             ssh_status = 'SSH Enabled'
         else:
             ssh_status = 'SSH Disabled'
@@ -1149,10 +1212,11 @@ class init:
     
     def is_term_resized(self):
         #future function to detect if termainl is resized
-        resize_check = curses.is_term_resized(nlines, ncols)
-        self.height_main, self.width_main = stdscr.getmaxyx()
-        if resize_check == True:
-            self.term_resize()
+        #resize_check = curses.is_term_resized(nlines, ncols)
+        #self.height_main, self.width_main = stdscr.getmaxyx()
+        #if resize_check == True:
+            #self.term_resize()
+        pass
 
     def term_resize(self):
         #future function to detect if termainl is resized
@@ -1170,7 +1234,7 @@ class RSync(PopUpBase):
         if self.has_been_called == True and called_from == 0:
             msg = 'rsync starting...'
         elif self.has_been_called == False and called_from == 'm':
-            if ssh_obj.enabled == True:
+            if ssh_obj.is_enabled == True:
                 msg = 'ssh enabled, rsync ready\n use key c'
         elif ssh_obj == True and called_from == 'm':
             msg = 'ssh must enabled, use rsync'
@@ -1325,12 +1389,12 @@ class WinManager:
         #also keeps the headers updated when switching windows
         self.left_head_path = file_explorer_0.abs_path
         self.right_head_path = file_explorer_1.abs_path
-        if ssh_obj.enabled == True and wins.active_panel == 1:
+        if ssh_obj.is_enabled == True and wins.active_panel == 1:
             try:
                 self.right_head_path = ssh_obj.server_info[0] + ':' + file_explorer_1.ssh_abs_path
             except:
                 self.right_head_path = file_explorer_1.abs_path
-        elif ssh_obj.enabled == True and wins.active_panel == 0:
+        elif ssh_obj.is_enabled == True and wins.active_panel == 0:
             try:
                 self.right_head_path = ssh_obj.server_info[0] + ':' + file_explorer_1.ssh_abs_path
             except:
@@ -1384,11 +1448,13 @@ class WinManager:
             self.cur_win = window_0
             self.other_win = window_1
             self.left_panel_sel()
+            #file_explorer_0.display()
         elif i == 1:
             self.other_panel = 0
             self.cur_win = window_1
             self.other_win = window_0
             self.right_panel_sel()
+            #file_explorer_1.display()
         self.refreshln1()
         curses.doupdate()
 
@@ -1421,12 +1487,9 @@ window_1.noutrefresh()
 ssh_obj = SSH()
 file_explorer_0 = file_explorer(stdscr, window_0, start_path, False)
 file_explorer_1 = file_explorer(stdscr, window_1, start_path, False)
-file_explorer_0.menu()
-file_explorer_1.menu()
 paths = []
 event = 0
 i = 0
-wins.set_active_panel(i)
 file_explorers = [file_explorer_0, file_explorer_1]
 status = StatusBar(stdscr, height_main, width_main, '', curses.color_pair(1))
 wins.set_active_panel(i)
@@ -1435,7 +1498,6 @@ glbl_opts = OptionsMenu()
 while event != ord('q'):
     while True:
         wins.upd_panel()
-        file_explorers[i].event = None
         file_explorers[i].display()
         event = file_explorers[i].event
         stdscr.noutrefresh()
@@ -1444,9 +1506,11 @@ while event != ord('q'):
         elif event == ord('f') or event == ord ('o'):
             event = menu.menubar_act(event)
             menu.display()
-            if ssh_obj.enabled == True:
+            if ssh_obj.is_enabled == True:
                 i = 1
             if event == ord('\t') or event == ord('f'):
+                break
+            if event == ord('q'):
                 break
     if event == ord('\t'):
         if i == 0:
@@ -1457,16 +1521,7 @@ while event != ord('q'):
         break
     wins.set_active_panel(i)
     status.refresh()
-if ssh_obj.enabled == True:
+if ssh_obj.is_enabled == True:
     ssh_obj.ssh.close()
-del menu
-del file_explorer_0
-del file_explorer_1
-del window_0
-del window_1
-del status
-stdscr.keypad(0)
-curses.echo()
-curses.nocbreak()
-curses.endwin()
-os.system('reset')
+
+exit_program()
