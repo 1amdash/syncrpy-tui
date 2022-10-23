@@ -3,7 +3,7 @@ import curses
 import constants as CONST
 from reset_window import ResetWindow
 from pop_ups import PopUpNewDir
-from Func_Navigate import navigate
+from navigate import navigate
 
 # CONST_LET_F_LWRCSE_KEY = ord('f')
 # CONST_LET_O_LWRCSE_KEY = ord('o')

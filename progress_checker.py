@@ -1,4 +1,4 @@
-from Func_human_readable_size import human_readable_size
+from human_readable_size import human_readable_size
 
 class ProgressChecker:
     """Used to created a progress bar.

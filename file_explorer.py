@@ -2,7 +2,7 @@
 import curses
 import os
 from ssh import SSH
-from Func_human_readable_size import human_readable_size
+from human_readable_size import human_readable_size
 from window_manager import WinManager
 from pop_ups import PopUpFileOpener
 from pop_ups import PopUpCopyFile
