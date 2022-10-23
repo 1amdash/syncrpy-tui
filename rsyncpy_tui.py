@@ -49,7 +49,13 @@ class Main:
                 win_manager.upd_panel(current_panel, file_explorers[current_panel].path)
                 Display(file_explorers[current_panel])
                 keyboard_input = GetInput(file_explorers[current_panel]).run()
-                event = KeyPress.event(KeyPress, keyboard_input, file_explorers[current_panel], file_explorers[current_panel].data, file_explorers[current_panel].position)
+                event = KeyPress.event(
+                    KeyPress,
+                    keyboard_input,
+                    file_explorers[current_panel],
+                    file_explorers[current_panel].data,
+                    file_explorers[current_panel].position
+                    )
                 file_explorers[current_panel].scroll()
                 QueueWinRefresh(stdscr)
                 if event in (CONST.CONST_LET_F_LWRCSE_KEY, CONST.CONST_LET_O_LWRCSE_KEY):
