@@ -1,13 +1,11 @@
-from Class_PopUpBase import PopUpBase
-from Class_QueueWinRefresh import QueueWinRefresh
-from Class_TextBox import TextBox
-from Class_ResetWindow import ResetWindow
-from Class_SuspendCurses import SuspendCurses 
-from Class_WinManager import WinManager
-from time import sleep
-from getpass import getpass
 import paramiko
 import curses
+from pop_ups import PopUpBase
+from queue_window_refresh import QueueWinRefresh
+from text_box import TextBox
+from suspend_curses import SuspendCurses 
+from time import sleep
+from getpass import getpass
 
 class SSH:
     """
@@ -23,7 +21,7 @@ class SSH:
         self.ssh = ''
         self.sftp = None
         self.ssh_path = None
-    
+
     def setup_SSHForm(self, stdscr):
         return SSHForm
 
@@ -34,7 +32,6 @@ class SSH:
         self.server_info.append(form.info[1]) # Username
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        x = 1
         with SuspendCurses(stdscr):
             try:
                 if form.info[0] == '' or form.info[1] == '':
@@ -43,14 +40,18 @@ class SSH:
                     return 0
                 passwd = getpass()
                 print('\nAuthenticating...')
-                self.ssh.connect(form.info[0], username=form.info[1], password=passwd, compress=True)
+                self.ssh.connect(
+                    form.info[0],
+                    username=form.info[1],
+                    password=passwd,
+                    compress=True
+                    )
                 self.get_transport(self.ssh)
                 self.enabled()
                 self.sftp = self.ssh.open_sftp()
                 self.win_manager.update_headers(1)
                 status.refresh()
             except Exception as err:
-                x = 0
                 print('\n')
                 print('\n' + str(err))
                 try:
@@ -69,6 +70,7 @@ class SSH:
             self.is_enabled = True
         else:
             self.is_enabled = False
+
     def ssh_close(self):
         if self.is_enabled:
             self.ssh.close()
@@ -99,20 +101,17 @@ class SSHForm(PopUpBase):
         while form_ready != True:
             curses.curs_set(2)
             self.win.move(3, 2)
-            QueueWinRefresh(self.win) 
+            QueueWinRefresh(self.win)
             curses.doupdate()
             textbox1_info = self.textbox1.action()
             form_ready = textbox1_info[1]
             self.win.move(7, 2)
-            QueueWinRefresh(self.win) 
+            QueueWinRefresh(self.win)
             curses.doupdate()
             textbox2_info = self.textbox2.action()
             form_ready = textbox2_info[1]
-
         if form_ready:
             self.info.append(textbox1_info[0])
             self.info.append(textbox2_info[0])
-
         self.win.erase()
-        
         return self.info

@@ -1,9 +1,9 @@
-from Class_PopUpBase import PopUpBase
-from Class_QueueWinRefresh import QueueWinRefresh
-from Class_KeyPress import KeyPress
-from Class_ResetWindow import ResetWindow
 import constants as CONST
 import curses
+from pop_ups import PopUpBase
+from queue_window_refresh import QueueWinRefresh
+from key_press import KeyPress
+from reset_window import ResetWindow
 
 class MenuBar(PopUpBase):
     """Creates the menubar
@@ -37,11 +37,11 @@ class MenuBar(PopUpBase):
 
     def open(self, event=None):
         if event == CONST.CONST_LET_F_LWRCSE_KEY:
-            return self.open_file_menu
+            return self.file_menu
         elif event == CONST.CONST_LET_O_LWRCSE_KEY:
-            return self.open_options_menu
+            return self.options_menu
     
-    def open_file_menu(self, event):
+    def file_menu(self, event):
         super().__init__(10, 15, 1, 1, self.stdscr)
         #now using self.win from base
         self.stdscr.addstr(0,1, 'File', curses.A_STANDOUT)
@@ -49,7 +49,7 @@ class MenuBar(PopUpBase):
         QueueWinRefresh(self.stdscr)
         self.display()
 
-    def open_options_menu(self, event):
+    def options_menu(self, event):
         super().__init__(10, 15, 1, 6, self.stdscr)
         self.stdscr.addstr(0,4+2, 'Options', curses.A_STANDOUT)
         self.menu_item = self.sub_menu2
@@ -97,7 +97,7 @@ class MenuBar(PopUpBase):
         self.close()
         
     def display(self):
-        self.win.keypad(0)
+        self.win.keypad(1)
         event = None
         while event not in (
             CONST.CONST_LET_F_LWRCSE_KEY,

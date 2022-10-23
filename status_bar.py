@@ -1,7 +1,8 @@
-from Class_WinManager import WinManager
-from Class_QueueWinRefresh import QueueWinRefresh
-from Class_SSH import SSH
+"""status_bar module"""
 import curses
+from window_manager import WinManager
+from queue_window_refresh import QueueWinRefresh
+from ssh import SSH
 
 class StatusBar:
     """Creates a statusbar at the bottom of the main screen and can be called to update the bar"""
@@ -10,7 +11,6 @@ class StatusBar:
     panel = ''
     def __init__(self, stdscr):
         self.height_main, self.width_main = stdscr.getmaxyx()
-
         self.status_bar_area = stdscr
         self.color = curses.color_pair(3)
         self.status_bar_area.move(self.height_main-1, len(self.status_bar_str))
@@ -20,8 +20,8 @@ class StatusBar:
         self.statusbar_len = len(self.status_bar_str)
         self.statusbar_remaining = self.width_main - len(self.status_bar_str) - 1
         self.status_bar_area.addstr(
-            self.height_main-1, 
-            self.statusbar_len, 
+            self.height_main-1,
+            self.statusbar_len,
             " " * self.statusbar_remaining,
             self.color
             )
@@ -43,7 +43,7 @@ class StatusBar:
         if self.statusbar_len < self.width_main:
             self.status_bar_area.addstr(self.height_main-1, 0, self.status_bar_str, self.color)
         self.status_bar_area.redrawln(self.height_main-1,0)
-        QueueWinRefresh(self.status_bar_area) #stdscr.noutrefresh()
+        QueueWinRefresh(self.status_bar_area)
 
     def refresh(self, panel):
         self.update(panel)

@@ -1,8 +1,32 @@
-from Class_QueueWinRefresh import QueueWinRefresh
+"""pop_ups module"""
+import shutil
+import threading
 import constants as CONST
 import curses
+from queue_window_refresh import QueueWinRefresh
+from reset_window import ResetWindow
+from copy_file import CopyFile
+from progress_checker import ProgressChecker
 
-from Class_PopUpBase import PopUpBase
+class PopUpBase:
+    """Creates a new window with basic sizing and formatting for various popups"""
+    def __init__(self, nlines, ncols, begin_y, begin_x, stdscr):
+        self.par_win_size_y, self.par_win_size_x = stdscr.getmaxyx()
+        self.y = int(self.par_win_size_y/4)
+        self.x = int(self.par_win_size_x/4)
+        self.h = int(self.par_win_size_y/2)
+        self.w = 25 # int(self.par_win_size_x*.5)
+        self.win = curses.newwin(nlines, ncols, begin_y, begin_x)
+        self.win.attron(curses.color_pair(2))
+        self.win.bkgd(curses.color_pair(2))
+        self.win.border()
+        QueueWinRefresh(self.win) 
+
+    def msg(self, msg):
+        """Will act as an alert/error window, where the msg argument can be an exception to print"""
+        self.win.addstr(1,1, msg, curses.color_pair(2))
+        QueueWinRefresh(self.win)
+        
 class PopUpNewDir(PopUpBase):
     """Creates a pop up and creates a new directory"""
     def __init__(self):
@@ -112,8 +136,10 @@ class PopUpDelete(PopUpBase):
 
 
 class PopUpFileOpener(PopUpBase):        
-    def __init__(self, stdscr, file_info, event=None, sftp=None, sftp_path=None):
+    def __init__(self, file_explorers, stdscr, file_info, event=None, sftp=None, sftp_path=None):
         y, x = stdscr.getmaxyx()
+        self.left_file_explorer = file_explorers[0]
+        self.right_file_explorer = file_explorers[1]
         super().__init__(y - 5, x - 5, 2, 2, stdscr)
         #now using self.win from base
         pop_up_size_y, pop_up_size_x = stdscr.getmaxyx()
@@ -186,8 +212,8 @@ class PopUpFileOpener(PopUpBase):
                 pop_up_pad.erase()
                 self.win.erase()
                 QueueWinRefresh(self.win)
-                ResetWindow(left_file_explorer)
-                ResetWindow(right_file_explorer)
+                ResetWindow(self.left_file_explorer)
+                ResetWindow(self.right_file_explorer)
                 curses.doupdate()
                 try:
                     file1.close()
@@ -197,7 +223,8 @@ class PopUpFileOpener(PopUpBase):
                 self.win.nodelay(0)
                 break
     
-
+def callbackFunc(thread):
+    thread._is_stopped = True
 
 class PopUpCopyFile(PopUpBase):
     """CopyFile pop up, this is called from key 5 when SSH is not active.
@@ -207,21 +234,23 @@ class PopUpCopyFile(PopUpBase):
     to the user.
     """
     t = None
-    def __init__(self, window, from_file, to_path, file_name):
+    def __init__(self, file_explorers, stdscr, from_file, to_path, file_name):
+        self.left_file_explorer = file_explorers[0]
+        self.right_file_explorer = file_explorers[1]
         y, x = stdscr.getmaxyx()
         super().__init__(7, int(x/2), int(y/3)*1, int(x/4)*1, stdscr)
         self.bar_width = int(x/2) - 2
-        try:
-            # Start copying on a separate thread
-            t = threading.Thread(
-                name='CopyThread', target=CopyFile, args=(from_file, to_path), daemon=True)
-            t.start()
-            t.is_started = True
-        except Exception as e:
-            error
-        if error:
-            progress = ProgressChecker(from_file, to_path, file_name, t, callback=callbackFunc)
-        try:
+        #try:
+        # Start copying on a separate thread
+        t = threading.Thread(
+            name='CopyThread', target=CopyFile, args=(from_file, to_path), daemon=True)
+        t.start()
+        t.is_started = True
+        #except Exception as e:
+        #    error
+        #if error:
+        progress = ProgressChecker(from_file, to_path, file_name, t, callback=callbackFunc)
+        try: #used for KeyBoard Interupt below
             while True:
                 if e == None:
                     progress.status()
@@ -252,8 +281,8 @@ class PopUpCopyFile(PopUpBase):
             curses.doupdate()
 
         if win_manager.active_panel == 0:
-            right_file_explorer.explorer(right_file_explorer.cwd)
-            ResetWindow(right_file_explorer)
+            right_file_explorer.explorer(self.right_file_explorer.cwd)
+            ResetWindow(self.right_file_explorer)
         else:
-            left_file_explorer.explorer(left_file_explorer.cwd)
-            ResetWindow(left_file_explorer)
+            left_file_explorer.explorer(self.left_file_explorer.cwd)
+            ResetWindow(self.left_file_explorer)

@@ -1,12 +1,10 @@
-from Class_QueueWinRefresh import QueueWinRefresh
-from Class_PopUpBase import PopUpBase
-from Class_ResetWindow import ResetWindow
-from Class_KeyPress import KeyPress
-
+"""OptionsMenu is a popup to setup global preferences/settings."""
 import curses
-
-CONST_ESCAPE_KEY = 27
-CONST_TAB_KEY = ord('\t')
+import constants as CONST
+from queue_window_refresh import QueueWinRefresh
+from pop_ups import PopUpBase
+from reset_window import ResetWindow
+from key_press import KeyPress
 
 class OptionsMenu(PopUpBase):
     """Popup menu meant to act as a 'preferences/settings' meant to affect the program globally"""
@@ -21,16 +19,15 @@ class OptionsMenu(PopUpBase):
         self.x = int (self.x/3)
         super().__init__(int(self.y), int(self.x), self.y, self.x, stdscr)
 
-    def menu(self): 
+    def menu(self):
         for index, item in enumerate(self.menu_items):
             if index == self.position:
                 mode = curses.A_REVERSE
             else:
                 mode = curses.A_NORMAL
             msg = "%s" % (item)
-            
             self.win.addstr(1 + index, 2, str(msg), mode)
-        QueueWinRefresh(self.win) 
+        QueueWinRefresh(self.win)
         curses.doupdate()
 
     def enter(self):
@@ -54,7 +51,7 @@ class OptionsMenu(PopUpBase):
         self.win.keypad(1)
         #curses.set_escdelay(100)
         event = None
-        while event not in (CONST_TAB_KEY, CONST_ESCAPE_KEY):
+        while event not in (CONST.CONST_TAB_KEY, CONST.CONST_ESCAPE_KEY):
             self.menu()
             ### MenuBar getch
             event = self.win.getch()

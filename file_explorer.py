@@ -1,11 +1,11 @@
-from Class_SSH import SSH
-from Func_human_readable_size import human_readable_size
-from Class_WinManager import WinManager
-from Class_KeyPress import KeyPress
-from Class_PopUps import PopUpFileOpener
-import constants as CONST
+"""file_explorer module"""
 import curses
 import os
+from ssh import SSH
+from Func_human_readable_size import human_readable_size
+from window_manager import WinManager
+from pop_ups import PopUpFileOpener
+from pop_ups import PopUpCopyFile
 
 class ResetPath:
     """Used to reset the path to '/' when FileExplorer messses up"""
@@ -56,6 +56,11 @@ class FileExplorer:
         self.explorer(path)
         self.menu()
 
+    def get_file_explorers(self, file_explorers):
+        self.file_explorers = file_explorers
+        self.left_file_explorer = file_explorers[0]
+        self.right_file_explorer = file_explorers[1]
+
     def explorer(self, path):
         if isinstance(self.ssh_obj, SSH):
             if self.ssh_obj.is_enabled:
@@ -88,11 +93,11 @@ class FileExplorer:
         data_list = sorted(data_list, key=lambda x:x[:1])
         #insert an index
         i = 1
-        for x in data_list:
-            x.insert(0,i)
+        for item in data_list:
+            item.insert(0,i)
             i = i + 1
         #turn data list into a dictionary
-        x = 0
+        item = 0
         self.data = dict()
         self.data = {x[0]: x[1:] for x in data_list}
         if self.abs_path == '/':
@@ -155,24 +160,24 @@ class FileExplorer:
         self.ssh_get_abs_path(self.next_ssh_path)
         item = 0
         data_list = []
-        for x, entry in zip(self.ssh_files_folders_dir, self.ssh_files_folders_attr):
-            i = stat.S_ISDIR(entry.st_mode)
-            s = entry.st_size
-            if i:
-                i = '/'
+        for file_name, attr in zip(self.ssh_files_folders_dir, self.ssh_files_folders_attr):
+            is_dir = stat.S_ISDIR(attr.st_mode)
+            s = attr.st_size
+            if is_dir:
+                is_dir = '/'
             else:
-                i = ''
-            data_list.append([i+x, s])
+                is_dir = ''
+            data_list.append([is_dir+file_name, s])
             item += 1
         #sort list based on file names
         data_list = sorted(data_list, key=lambda x:x[:1])
         #insert an index and use the size function to make size human readable
-        i = 0
-        for x in data_list:
-            i += 1
-            x.insert(0,i)
-            s = human_readable_size(x[2], suffix="B")
-            x[2]=s
+        count = 0
+        for item in data_list:
+            count += 1
+            item.insert(0,count)
+            s = human_readable_size(item[2], suffix="B")
+            item[2]=s
         #turn data list into a dictionary
         x = 0
         self.data = dict()
@@ -184,10 +189,9 @@ class FileExplorer:
 
     def draw_pad(self):
         self.pad = curses.newpad(self.height + 800, self.width) #size of pad
-
         self.pad.scrollok(True)
         self.pad.idlok(True)
-        self.pad.keypad(1)
+        self.pad.keypad(True)
         self.pad.bkgd(curses.color_pair(1))
 
     def start_rsync(self):
@@ -213,8 +217,14 @@ class FileExplorer:
         self.scroll_line = self.max_height - 3
         self.pad.setscrreg(0,self.max_height) #self.bottom -2)
         self.width = self.width - 2
-        self.pad_refresh = lambda: self.pad.noutrefresh(self.scroller, 
-        0, self.start_y, self.start_x, self.bottom, self.screen_width -2)
+        self.pad_refresh = lambda: self.pad.noutrefresh(
+            self.scroller,
+            0,
+            self.start_y,
+            self.start_x,
+            self.bottom,
+            self.screen_width - 2
+            )
         #par = '[ ]' # can be added to the msg below to create a selector, likely to be removed
         for index, items in self.data.items():
             padding = self.width - len(items[0]) - 5
@@ -232,15 +242,15 @@ class FileExplorer:
         self.pad_refresh()
 
     def set_paths(self):
-        x = WinManager.active_panel
-        if x == 0:
+        panel = WinManager.active_panel
+        if panel == 0:
             oth_panel = 1
         else:
             oth_panel = 0
         if self.new_path == None:
-            self.paths[x] = self.prev_paths[x].replace('//','/')
+            self.paths[panel] = self.prev_paths[panel].replace('//','/')
         else:
-            self.prev_paths[x] = self.paths[x]
+            self.prev_paths[panel] = self.paths[panel]
             self.paths[oth_panel] = self.prev_paths[oth_panel]
     
     def go_to_top(self):
@@ -256,15 +266,26 @@ class FileExplorer:
         PopUpDelete(sel_file)
 
     def copy_selected_items(self):
+        #if ssh_obj != None:
+         #   if ssh_obj.is_enabled:
+
+          #      self._exp.start_rsync()
+           # else:
         file_name = self.data[self.position][0]
         if self.win_manager.active_panel == 0:
             self.from_file = self.path + '/' + file_name
-            self.to_path = right_file_explorer.path
+            self.to_path = self.right_file_explorer.path
         elif self.win_manager.active_panel == 1:
             self.from_file = self.path + '/' + file_name
-            self.to_path = left_file_explorer.path
+            self.to_path = self.left_file_explorer.path
         if self.position != 0:
-            PopUpCopyFile(stdscr, self.from_file, self.to_path, file_name)
+            PopUpCopyFile(
+                self.file_explorers,
+                self.win_manager.stdscr,
+                self.from_file,
+                self.to_path,
+                file_name
+                )
 
     def scroll(self):
         if self.cursor > self.scroll_line:
@@ -279,10 +300,10 @@ class FileExplorer:
     def get_path(self):
         return self.data[self.position][0]
 
-    def is_dir(self, dir):
-        if dir.startswith('/'):
+    def is_dir(self, path):
+        if path.startswith('/'):
             forward_slash = '/'
-            self.full_path = dir + forward_slash
+            self.full_path = path + forward_slash
             return True
         else:
             return False
@@ -291,8 +312,6 @@ class FileExplorer:
         """Changes the directory or opens file when called,"""
         path = self.get_path()
         is_dir = self.is_dir(path)
-        
-
         if self.position != 0 and is_dir:
             if WinManager.active_panel == 1:
                 if self.ssh_obj.is_enabled:
@@ -309,7 +328,7 @@ class FileExplorer:
             self.explorer(self.new_path)
         elif self.position != 0 and is_dir is not True:
             sel_file = self.path + '/' + path
-            PopUpFileOpener(self, self.win_manager.stdscr, sel_file)
+            PopUpFileOpener(self.file_explorers, self.win_manager.stdscr, sel_file)
         else:
             self.cwd = self.new_path = self.par_dir
             if self.ssh_obj:
@@ -318,15 +337,3 @@ class FileExplorer:
             self.set_paths()
             self.explorer(self.par_dir)
         self.win_manager.upd_panel(self.win_manager.active_panel, self.path)
-
-
-    # def display(self):
-    #     self.event = event = None
-    #     while event not in (CONST.CONST_TAB_KEY, CONST.CONST_LET_Q_LWRCSE_KEY, CONST.CONST_LET_F_LWRCSE_KEY, CONST.CONST_LET_O_LWRCSE_KEY):
-    #         self.pad.keypad(1)
-    #         self.menu()
-    #         curses.doupdate()
-    #         event = self.pad.getch()         
-    #         self.event = KeyPress.event(KeyPress, event, self, self.data, self.position)
-    #         self.scroll()    
-           

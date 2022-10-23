@@ -1,3 +1,6 @@
+import subprocess
+import shlex
+
 class RSync(PopUpBase):
     """Main Rsync function
 

@@ -1,7 +1,7 @@
-from Class_QueueWinRefresh import QueueWinRefresh
+"""suspend_curses module. exits and returns to the curses programs"""
 import curses
 import os
-from time import sleep
+from queue_window_refresh import QueueWinRefresh
 
 class SuspendCurses:
     def __init__(self, stdscr):
@@ -17,13 +17,11 @@ class SuspendCurses:
         curses.endwin()
         os.system('reset')
         print('Leaving curses...')
-        sleep(.5)
 
     def __exit__(self, exc_type, exc_val, tb):
         print('\nReturning to curses...')
         print('\n')
-        sleep(.5)
         self.stdscr = curses.initscr()
         curses.noecho()
         curses.cbreak()
-        self.stdscr.keypad(1)
+        self.stdscr.keypad(True)

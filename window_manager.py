@@ -1,5 +1,6 @@
-from Class_QueueWinRefresh import QueueWinRefresh
+"""window_manager module"""
 import curses
+from queue_window_refresh import QueueWinRefresh
 
 class WinManager:
     """Window manager to setup left and right window panels
@@ -36,11 +37,11 @@ class WinManager:
     def draw_left_win(self):
         #calls draw window and adds parameters for the left panel
         left_win_x_start = 0
-        self.left_win = self.draw_win( 
-                self.window_height, 
-                self.window_width, 
-                1, 
-                left_win_x_start, 
+        self.left_win = self.draw_win(
+                self.window_height,
+                self.window_width,
+                1,
+                left_win_x_start,
                 title=str('/')
                 )
         QueueWinRefresh(self.left_win)
@@ -50,10 +51,10 @@ class WinManager:
         #calls draw window and adds parameters for the right panel
         right_win_x_start = int(self.screen_width/2)
         self.right_win = self.draw_win(
-                self.window_height, 
-                self.window_width, 
+                self.window_height,
+                self.window_width,
                 1,
-                right_win_x_start, 
+                right_win_x_start,
                 title=str('/')
                 )
         QueueWinRefresh(self.right_win)
@@ -74,9 +75,8 @@ class WinManager:
         #            pass
 
     def trim_header_path(self, path):
-        panel_widths = int(self.stdscr.getmaxyx()[1]/2) -2
+        panel_widths = int(self.stdscr.getmaxyx()[1]/2) - 2
         header_length = len(path)
-        header_length_remain = header_length - panel_widths
         if header_length > panel_widths:
             trimmed_chars = header_length - panel_widths
             path = path[trimmed_chars:]
@@ -116,7 +116,7 @@ class WinManager:
             self.right_panel_sel()
         self.refreshln1()
         curses.doupdate()
-    
+
     def switch_panels(self, current_panel):
         if current_panel == 0:
             current_panel += 1

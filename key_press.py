@@ -1,21 +1,24 @@
-from Class_ResetWindow import ResetWindow
-from Func_Navigate import navigate
+"""key_press module."""
 import curses
+import constants as CONST
+from reset_window import ResetWindow
+from pop_ups import PopUpNewDir
+from Func_Navigate import navigate
 
-CONST_LET_F_LWRCSE_KEY = ord('f')
-CONST_LET_O_LWRCSE_KEY = ord('o')
-CONST_ESCAPE_KEY = 27
-CONST_ENTER_KEY = ord('\n')
-CONST_TAB_KEY = ord('\t')
-CONST_LET_Q_KEY = ord('Q')
-CONST_LET_Q_LWRCSE_KEY = ord('q')
-CONST_NUM_9_KEY = ord('9')
-CONST_NUM_5_KEY = ord('5')
-CONST_NUM_9_KEY = ord('9')
-CONST_LET_X_LWRCSE_KEY = ord('x')
-CONST_LET_B_LWRCSE_KEY = ord('b')
-CONST_LET_T_LWRCSE_KEY = ord('t')
-CONST_LET_N_LWRCSE_KEY = ord('n')
+# CONST_LET_F_LWRCSE_KEY = ord('f')
+# CONST_LET_O_LWRCSE_KEY = ord('o')
+# CONST_ESCAPE_KEY = 27
+# CONST_ENTER_KEY = ord('\n')
+# CONST_TAB_KEY = ord('\t')
+# CONST_LET_Q_KEY = ord('Q')
+# CONST_LET_Q_LWRCSE_KEY = ord('q')
+# CONST_NUM_9_KEY = ord('9')
+# CONST_NUM_5_KEY = ord('5')
+# CONST_NUM_9_KEY = ord('9')
+# CONST_LET_X_LWRCSE_KEY = ord('x')
+# CONST_LET_B_LWRCSE_KEY = ord('b')
+# CONST_LET_T_LWRCSE_KEY = ord('t')
+# CONST_LET_N_LWRCSE_KEY = ord('n')
 
 class KeyPress:
     def event(self, key_press, explorer, items=None, position=None):
@@ -38,30 +41,30 @@ class KeyPress:
             self._exp.position = navigate(1, items, position)
         elif event == curses.KEY_LEFT:
             self._exp.position = navigate(-1, items, position)
-    
+
     def key_event(self, event, items=None, position=None): 
-        if event == CONST_ENTER_KEY:
+        if event == CONST.CONST_ENTER_KEY:
             self.enter_key(self, event)
             return event
         elif event == 27:
             return event
-        elif event == CONST_TAB_KEY:
+        elif event == CONST.CONST_TAB_KEY:
             return event
-        elif event in (CONST_LET_F_LWRCSE_KEY, CONST_LET_O_LWRCSE_KEY):
+        elif event in (CONST.CONST_LET_F_LWRCSE_KEY, CONST.CONST_LET_O_LWRCSE_KEY):
             return event
-        elif event == CONST_LET_Q_LWRCSE_KEY:
+        elif event == CONST.CONST_LET_Q_LWRCSE_KEY:
             return event
-        elif event == CONST_LET_X_LWRCSE_KEY:
+        elif event == CONST.CONST_LET_X_LWRCSE_KEY:
             self.close_ssh_key(self, event)
-        elif event == CONST_NUM_5_KEY:
+        elif event == CONST.CONST_NUM_5_KEY:
             self.copy_key(self,event)
-        elif event == CONST_LET_N_LWRCSE_KEY:
+        elif event == CONST.CONST_LET_N_LWRCSE_KEY:
             self.new_dir_key(self, event)
-        elif event == CONST_LET_B_LWRCSE_KEY:
+        elif event == CONST.CONST_LET_B_LWRCSE_KEY:
             self.to_bottom_key(self)
-        elif event == CONST_LET_T_LWRCSE_KEY:
+        elif event == CONST.CONST_LET_T_LWRCSE_KEY:
             self.to_top_key(self)
-        elif event == CONST_NUM_9_KEY:
+        elif event == CONST.CONST_NUM_9_KEY:
             self.delete_key(self, items, position)
         else:
             pass
@@ -95,9 +98,4 @@ class KeyPress:
             pass
 
     def copy_key(self,event):
-        if ssh_obj.is_enabled:
-            self._exp.start_rsync()
-        else:
             self._exp.copy_selected_items()
-            ResetWindow(left_file_explorer)
-            ResetWindow(right_file_explorer) 

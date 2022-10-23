@@ -1,4 +1,4 @@
-from Class_QueueWinRefresh import QueueWinRefresh
+from queue_window_refresh import QueueWinRefresh
 class ResetWindow:
     """When called, redraws windows, touched method is not used right now"""
     def __init__(self, explorer):
@@ -19,7 +19,6 @@ class ResetWindow:
             self.explorer = explorer[1]
         else:
             self.explorer = explorer
-
 
     def redraw(self):
         self.window.redrawwin()
