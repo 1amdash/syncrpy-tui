@@ -142,12 +142,19 @@ class PopUpFileOpener(PopUpBase):
         self.right_file_explorer = file_explorers[1]
         super().__init__(y - 5, x - 5, 2, 2, stdscr)
         #now using self.win from base
-        pop_up_size_y, pop_up_size_x = stdscr.getmaxyx()
+        self.pop_up_size_y = y
+        self.pop_up_size_x = x
         self.win.attron(curses.color_pair(2))
         self.win.bkgd(curses.color_pair(2))
         self.win.box(0,0)
         self.win.addstr(0, 2, str(file_info).replace('//','/') + ' - press q to exit')
         QueueWinRefresh(self.win)
+
+        file, file_lines = self.open_file(file_info)
+        self.display_file(file, file_lines)
+
+
+    def open_file(self, file_info):
         try:
             file1 = open(file_info,'r', encoding='utf-8')
             file_lines = file1.readlines()
@@ -162,29 +169,33 @@ class PopUpFileOpener(PopUpBase):
                 file_lines = remote_file.readlines()
             except Exception as e:
                 print(e)
-        count = 0
-        for line in file_lines:
-            count += 1
-        pop_up_pad = curses.newpad(count + 2, pop_up_size_x -2)
-        pop_up_pad.bkgd(curses.color_pair(2))
-        count = 0
+        return file1, file_lines
 
+    def display_file(self, file, file_lines):
+        num_of_rows = 0
         for line in file_lines:
-            count += 1
-            if len(line) > pop_up_size_x:
-                pop_up_pad.addstr(count, 1,  'toolong', curses.color_pair(2))
+            num_of_rows += 1
+        pop_up_pad = curses.newpad(num_of_rows + 2, self.pop_up_size_x -2)
+        pop_up_pad.bkgd(curses.color_pair(2))
+        
+        num_of_cols = 0
+        for line in file_lines:
+            num_of_cols += 1
+            if len(line) > self.pop_up_size_x:
+                pop_up_pad.addstr(num_of_cols, 1,  'toolong', curses.color_pair(2))
                 break
-            pop_up_pad.addstr(count, 1,  line, curses.color_pair(2))
+            pop_up_pad.addstr(num_of_cols, 1,  line, curses.color_pair(2))
         
         self.win.keypad(1)
         pop_up_panel = curses.panel.new_panel(self.win)
         pop_up_panel.top()
         pop_up_panel.show()
-        width = pop_up_size_x-5
+        width = self.pop_up_size_x-5
         scroller = 0
         scroller_hor = 0
+
         def pop_up_pad_refresh(): pop_up_pad.noutrefresh(
-            scroller, scroller_hor, 3, 3, pop_up_size_y-5, width)
+            scroller, scroller_hor, 3, 3, self.pop_up_size_y-5, width)
         while True:
             pop_up_pad_refresh()
             curses.doupdate()
@@ -192,16 +203,16 @@ class PopUpFileOpener(PopUpBase):
             ###pop up getch
             ch = self.win.getch()
             cursor = pop_up_pad.getyx()
-            if ch == curses.KEY_UP and count > pop_up_size_y:
+            if ch == curses.KEY_UP and num_of_rows > self.pop_up_size_y:
                 scroller  -= 1
                 if scroller <= 0:
                     scroller = 0
-            elif ch == curses.KEY_DOWN and count > pop_up_size_y:
+            elif ch == curses.KEY_DOWN and num_of_rows > self.pop_up_size_y:
                 scroller += 1
                 if scroller >= cursor[0]:
                     scroller = cursor[0]
             elif ch == CONST.CONST_LET_B_LWRCSE_KEY:
-                scroller = cursor[0] - pop_up_size_y + 7
+                scroller = cursor[0] - self.pop_up_size_y + 7
             elif ch == CONST.CONST_LET_T_LWRCSE_KEY:
                 scroller = 0
             elif ch == curses.KEY_RIGHT and len(line) > width:
@@ -216,7 +227,7 @@ class PopUpFileOpener(PopUpBase):
                 ResetWindow(self.right_file_explorer)
                 curses.doupdate()
                 try:
-                    file1.close()
+                    file.close()
                 except:
                     self.win.nodelay(0)
                     break

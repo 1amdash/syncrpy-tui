@@ -1,8 +1,15 @@
+"""Button Class"""
+import curses
+import constants as CONST
+from queue_window_refresh import QueueWinRefresh
+from key_press import KeyPress
+
+
 class Button:
-    """Meant to be a portable Button"""
-    def __init__(self, window, list):
+    """Portable Button"""
+    def __init__(self, window, item_list):
         self.window = window
-        self.list = list
+        self.item_list = item_list
 
         self.button_press_ok = False
         self.button_press_cancel = False
@@ -28,19 +35,20 @@ class Button:
                 return
             else:
                 event = self.window.getch()
-                event = KeyPress.event(KeyPress, event, self, self.list, self.position)
+                event = KeyPress.event(KeyPress, self.item_list, self.position)
 
     def event(self, action):
         self.client_ready = action
 
     def menu(self):
         space = 10
-        for index, x in enumerate(self.list):
+        for index, item in enumerate(self.item_list):
             if index == self.position:
                 mode = curses.A_REVERSE
             else:
                 mode = curses.A_NORMAL
-            self.window.addstr(5, space, str(x), mode)
+            self.window.addstr(5, space, str(item), mode)
             space += 10
         QueueWinRefresh(self.window)
         curses.doupdate()
+        

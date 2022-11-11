@@ -1,3 +1,4 @@
+"""Syncrpy-TUI Constants"""
 CONST_LET_F_LWRCSE_KEY = ord('f')
 CONST_LET_O_LWRCSE_KEY = ord('o')
 CONST_ESCAPE_KEY = 27

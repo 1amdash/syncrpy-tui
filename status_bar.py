@@ -1,8 +1,8 @@
 """status_bar module"""
 import curses
-from window_manager import WinManager
 from queue_window_refresh import QueueWinRefresh
 from ssh import SSH
+
 
 class StatusBar:
     """Creates a statusbar at the bottom of the main screen and can be called to update the bar"""

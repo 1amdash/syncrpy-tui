@@ -1,23 +1,9 @@
-"""text_box module"""
+"""TextBox Class"""
 import curses
 import curses.textpad
 import constants as CONST
 from queue_window_refresh import QueueWinRefresh
 
-# CONST_LET_F_LWRCSE_KEY = ord('f')
-# CONST_LET_O_LWRCSE_KEY = ord('o')
-# CONST_ESCAPE_KEY = 27
-# CONST_ENTER_KEY = ord('\n')
-# CONST_TAB_KEY = ord('\t')
-# CONST_LET_Q_KEY = ord('Q')
-# CONST_LET_Q_LWRCSE_KEY = ord('q')
-# CONST_NUM_9_KEY = ord('9')
-# CONST_NUM_5_KEY = ord('5')
-# CONST_NUM_9_KEY = ord('9')
-# CONST_LET_X_LWRCSE_KEY = ord('x')
-# CONST_LET_B_LWRCSE_KEY = ord('b')
-# CONST_LET_T_LWRCSE_KEY = ord('t')
-# CONST_LET_N_LWRCSE_KEY = ord('n')
 
 class TextBox:
     """create single text box, meant to be portable"""

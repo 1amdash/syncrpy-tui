@@ -2,6 +2,7 @@
 import curses
 from queue_window_refresh import QueueWinRefresh
 
+
 class WinManager:
     """Window manager to setup left and right window panels
 
@@ -25,9 +26,9 @@ class WinManager:
         self.screen_width = max_y_x[1]
         return max_y_x
 
-    def draw_win(self, h, w, y, x, title):
+    def draw_win(self, height, width, y_start, x_start, title):
         #draws the initial left and right windows
-        window = self.stdscr.derwin(h, w, y, x)
+        window = self.stdscr.derwin(height, width, y_start, x_start)
         window.bkgd(curses.color_pair(1))
         window.box(0,0)
         window.keypad(1)
@@ -70,7 +71,8 @@ class WinManager:
             self.right_head_path = path
         #if ssh_obj.is_enabled:
         #        try:
-        #            self.right_head_path = ssh_obj.server_info[0] + ':' + right_file_explorer.ssh_abs_path
+        #            self.right_head_path =
+        #               ssh_obj.server_info[0] + ':' + right_file_explorer.ssh_abs_path
         #        except AttributeError:
         #            pass
 
@@ -106,25 +108,30 @@ class WinManager:
         self.right_win.move(0,1)
         self.right_win.clrtoeol()
         self.right_win.border()
-        self.right_win.addstr(0,1,str(self.right_head_path),curses.A_STANDOUT | curses.color_pair(3))
+        self.right_win.addstr(
+            0,
+            1,
+            str(self.right_head_path),curses.A_STANDOUT |
+            curses.color_pair(3)
+            )
 
-    def update_headers(self, current_panel):
+    def update_headers(self, active_panel):
         self.panel_headers()
-        if current_panel == 0:
+        if active_panel == 0:
             self.left_panel_sel()
         else:
             self.right_panel_sel()
         self.refreshln1()
         curses.doupdate()
 
-    def switch_panels(self, current_panel):
-        if current_panel == 0:
-            current_panel += 1
+    def set_active_panel(self, active_panel):
+        if active_panel == 0:
+            active_panel += 1
         else:
-            current_panel = 0
-        self.active_panel = current_panel
-        return current_panel
+            active_panel = 0
+        self.active_panel = active_panel
+        return active_panel
 
-    def upd_panel(self, current_panel, path):
+    def upd_panel(self, active_panel, path):
         self.path = path
-        self.update_headers(current_panel)
+        self.update_headers(active_panel)

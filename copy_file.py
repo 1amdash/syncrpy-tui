@@ -1,3 +1,6 @@
+"""CopyFile Class"""
+import shutil
+
 
 class CopyFile:
     """Actual file copy function called when SSH not active and key 5 pressed"""
@@ -9,3 +12,4 @@ class CopyFile:
             self.action = 0
         except Exception as error:
             self.error = error
+            

@@ -1,2 +1,4 @@
-.vscode/launch.json
+.vscode/
 __pycache__/
+launch.json
+settings.json

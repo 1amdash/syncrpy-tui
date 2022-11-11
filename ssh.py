@@ -1,11 +1,14 @@
+from multiprocessing import AuthenticationError
 import paramiko
 import curses
+from raise_api_error import RaiseAPIError
 from pop_ups import PopUpBase
 from queue_window_refresh import QueueWinRefresh
 from text_box import TextBox
 from suspend_curses import SuspendCurses 
 from time import sleep
 from getpass import getpass
+
 
 class SSH:
     """
@@ -24,7 +27,7 @@ class SSH:
 
     def setup_SSHForm(self, stdscr):
         return SSHForm
-
+        
     def start(self, win_manager, stdscr, status):
         self.win_manager = win_manager
         form = SSHForm(stdscr) 
@@ -33,34 +36,38 @@ class SSH:
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         with SuspendCurses(stdscr):
-            try:
-                if form.info[0] == '' or form.info[1] == '':
-                    print('\nNah dawg... enter a hostname/ip and username')
-                    sleep(3)
-                    return 0
-                passwd = getpass()
-                print('\nAuthenticating...')
-                self.ssh.connect(
-                    form.info[0],
-                    username=form.info[1],
-                    password=passwd,
-                    compress=True
-                    )
-                self.get_transport(self.ssh)
-                self.enabled()
-                self.sftp = self.ssh.open_sftp()
-                self.win_manager.update_headers(1)
-                status.refresh()
-            except Exception as err:
-                print('\n')
-                print('\n' + str(err))
+            return_to_curses = False
+            while return_to_curses is not True:
                 try:
-                    self.ssh.close()
-                except Exception as err:
-                    print('\n' + str(err))
-                sleep(3)
-            except:
-                pass
+                    if form.info[0] == '' or form.info[1] == '':
+                        print('\nNah dawg... enter a hostname/ip and username')
+                        sleep(3)
+                        return 0
+                    passwd = getpass()
+                    print('\nAuthenticating...')
+                    self.ssh.connect(
+                        form.info[0],
+                        username=form.info[1],
+                        password=passwd,
+                        compress=True
+                        )
+                    self.get_transport(self.ssh)
+                    self.sftp = self.ssh.open_sftp()
+                    self.win_manager.update_headers(1)
+                    return_to_curses = self.enabled()
+                except AuthenticationError as error:
+                    print(error)
+                    continue
+                except (ConnectionError, ConnectionRefusedError) as error:
+                    print(error)
+                    print('\n')
+                    sleep(3)
+                    return_to_curses = True
+                except Exception as error:
+                    print(error)
+                    print('Returning to curses.')
+                    sleep(3)
+                    return_to_curses = True
 
     def get_transport(self, ssh):
         self.transport = ssh.get_transport()
@@ -68,8 +75,10 @@ class SSH:
     def enabled(self):
         if self.transport.is_active():
             self.is_enabled = True
+            return True
         else:
             self.is_enabled = False
+            return False
 
     def ssh_close(self):
         if self.is_enabled:
