@@ -82,7 +82,7 @@ class Main:
                 _ssh_is_enabled = ssh_enabled()
                 ready_to_return = self.return_to_main_loop(_menu_event, _ssh_is_enabled)
         else:
-            return event
+            return call_menu_event
 
     def update_all_views(self, _menu_bar, _file_explorers, _status_bar):
         _left_file_explorer = _file_explorers[0]
