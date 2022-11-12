@@ -67,22 +67,24 @@ class Main:
         if event == CONST.CONST_LET_Q_LWRCSE_KEY:
             return True
 
-    def call_menu(self, call_menu_event, _menu_bar, _call_ssh):
+    def call_menu(self, key_press, _menu_bar, call_ssh):
+        _call_menu_event = key_press.menu_event
+        _key_press_ = key_press.key
         ready_to_return = False
-        if call_menu_event is True:
+        if _call_menu_event is True:
             while ready_to_return is not True:
-                _menu_bar(menu_event)
+                _menu_bar(_key_press.key)
                 Display(_menu_bar)
-                _menu_event = KeyPress(
+                _key_press = KeyPress(
                     _menu_bar,
                     _menu_bar.menu_item,
                     _menu_bar.position
                     )
-                _call_ssh(_menu_event)
-                _ssh_is_enabled = ssh_enabled()
-                ready_to_return = self.return_to_main_loop(_menu_event, _ssh_is_enabled)
+                call_ssh(_key_press)
+                _ssh_is_enabled = self.ssh_enabled()
+                ready_to_return = self.return_to_main_loop(_key_press.key, _ssh_is_enabled)
         else:
-            return call_menu_event
+            return _call_menu_event
 
     def update_all_views(self, _menu_bar, _file_explorers, _status_bar):
         _left_file_explorer = _file_explorers[0]
@@ -93,7 +95,7 @@ class Main:
         _status_bar.refresh(1)
         curses.doupdate()
 
-    def call_ssh(self, event, _status_bar):
+    def call_ssh(self, event):
         if event == 'ssh':
             ssh_object.start(win_manager, stdscr, None)
 
@@ -107,6 +109,8 @@ class Main:
             CONST.CONST_LET_Q_LWRCSE_KEY
             ) or ssh_is_enabled is True:
             return True
+        else:
+            return False
 
     def switch_panels(self, tab_event, _current_panel, _status_bar):
         if tab_event is True:

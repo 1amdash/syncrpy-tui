@@ -20,6 +20,9 @@ class KeyPress:
         self.get_input(obj)
         self.key_or_arrow_event()
 
+    def __call__(self, *args, **kwds):
+        return self.key
+
     def get_input(self, obj):
         obj.window.keypad(True)
         try:

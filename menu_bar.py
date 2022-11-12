@@ -21,20 +21,24 @@ class MenuBar(PopUpBase):
         self.stdscr = stdscr
         self.screen_height, self.screen_width = stdscr.getmaxyx()
         self.draw_menu_bar()
+        self.is_menu_open = False
 
     def __call__(self, event):
         if event is not None:
-            open_menu = self.open(event)
-            return open_menu(event)
+            if event in (CONST.CONST_LET_F_LWRCSE_KEY, CONST.CONST_LET_O_LWRCSE_KEY) and self.is_menu_open is False:
+                open_menu = self.open(event)
+                return open_menu(event)
+            elif event in (CONST.CONST_LET_F_LWRCSE_KEY, CONST.CONST_LET_O_LWRCSE_KEY) and self.is_menu_open is True:
+                return self.close_menu()
 
     def draw_menu_bar(self):
         """Draws menu_bar in normal state, used to reset the menu bar as well."""
-        menu_bar_color = curses.color_pair(4)
+        menu_bar_color = curses.color_pair(2)
         self.stdscr.addstr(0,0, ' ', menu_bar_color)
         string = 'File Options'
         string_length = len(string) + 1
         remainder_of_menu_bar = self.screen_width - string_length
-        self.stdscr.addstr(0,1, string, menu_bar_color)
+        self.stdscr.addstr(0,1, string, menu_bar_color | curses.A_NORMAL)
         self.stdscr.addstr(0,string_length, ' ' * remainder_of_menu_bar, menu_bar_color)
         QueueWinRefresh(self.stdscr)
 
@@ -45,14 +49,11 @@ class MenuBar(PopUpBase):
         elif event == CONST.CONST_LET_O_LWRCSE_KEY:
             return self.options_menu
         else:
-            self.close_menu()
             return self.open_program
     
     def open_program(self, event):
         if event == 'ssh':
-            return 'start'
-            
-            
+            return 'start'           
             # if SSH.is_enabled is False:
             #     ssh_obj.start(win_manager, self.stdscr, status)
             #     reset_winders()
@@ -62,31 +63,34 @@ class MenuBar(PopUpBase):
             #     curses.doupdate()
             # CALL rsync
             # RSync('m')
-
             #glbl_opts.display()
 
     def file_menu(self, event):
         super().__init__(10, 15, 1, 1, self.stdscr)
         self.window = self.win
-        self.stdscr.addstr(0,1, 'File', curses.color_pair(1) | curses.A_STANDOUT)
+        self.stdscr.addstr(0,1, 'File', curses.color_pair(2) | curses.A_STANDOUT)
         self.menu_item = self.sub_menu
         QueueWinRefresh(self.stdscr)
+        self.is_menu_open = True
 
     def options_menu(self, event):
         super().__init__(10, 15, 1, 6, self.stdscr)
         self.window = self.win
-        self.stdscr.addstr(0,4+2, 'Options', curses.color_pair(1) | curses.A_STANDOUT)
+        self.stdscr.addstr(0,4+2, 'Options', curses.color_pair(2) | curses.A_STANDOUT)
         self.menu_item = self.sub_menu2
         QueueWinRefresh(self.stdscr)
+        self.is_menu_open = True
 
     def close_menu(self):
         #self.window.clear()
         self.window.erase()
         self.window.noutrefresh()
-        self.stdscr.addstr(0,1, 'File Options', curses.color_pair(3) | curses.A_NORMAL)
         self.draw_menu_bar()
+        self.stdscr.addstr(0,1, 'File Options', curses.color_pair(2) | curses.A_NORMAL)
+
         QueueWinRefresh(self.stdscr)
         curses.doupdate()
+        self.is_menu_open = False
 
     def menu(self):
         """print list as basis for menu, the item selector is the A_REVERSE (highlighted) item"""
