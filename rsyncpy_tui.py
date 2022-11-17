@@ -4,6 +4,9 @@ import os
 import curses
 import curses.textpad
 import curses.panel
+from pathlib import Path
+
+from tomlkit import key
 import constants as CONST
 from options_menu import OptionsMenu
 from ssh import SSH
@@ -50,7 +53,7 @@ class Main:
         _current_panel = 0
         ready_to_exit = False
         while ready_to_exit is not True:
-            _win_manager.upd_panel(_current_panel, _file_explorers[_current_panel].path)
+            _win_manager.upd_panel(_current_panel, _file_explorers[_current_panel].full_path)
             Display(_file_explorers[_current_panel])
             key_press = KeyPress(
                 _file_explorers[_current_panel],
@@ -58,31 +61,34 @@ class Main:
                 _file_explorers[_current_panel].position,
                 )
             _file_explorers[_current_panel].scroll()
-            event = self.call_menu(key_press.menu_event, _menu_bar, self.call_ssh)
+            self.call_menu(key_press, _menu_bar, left_file_explorer)
             _current_panel = self.switch_panels(key_press.tab_event, _current_panel, _status_bar)
-            ready_to_exit = self.exit_main_loop(key_press)
+            ready_to_exit = self.exit_main_loop(key_press.key)
             curses.doupdate()
 
     def exit_main_loop(self, event):
         if event == CONST.CONST_LET_Q_LWRCSE_KEY:
             return True
 
-    def call_menu(self, key_press, _menu_bar, call_ssh):
+    def call_menu(self, key_press, _menu_bar, _left_file_explorer):
         _call_menu_event = key_press.menu_event
-        _key_press_ = key_press.key
+        _key_press = key_press.key
         ready_to_return = False
         if _call_menu_event is True:
             while ready_to_return is not True:
-                _menu_bar(_key_press.key)
+                _menu_bar(_key_press)
                 Display(_menu_bar)
                 _key_press = KeyPress(
                     _menu_bar,
                     _menu_bar.menu_item,
                     _menu_bar.position
                     )
-                call_ssh(_key_press)
+                
+                self.call_ssh(_key_press.selected_menu_item)
                 _ssh_is_enabled = self.ssh_enabled()
                 ready_to_return = self.return_to_main_loop(_key_press.key, _ssh_is_enabled)
+            _menu_bar.close_menu()
+            ResetWindow(_left_file_explorer)
         else:
             return _call_menu_event
 
@@ -95,14 +101,14 @@ class Main:
         _status_bar.refresh(1)
         curses.doupdate()
 
-    def call_ssh(self, event):
-        if event == 'ssh':
+    def call_ssh(self, selected_menu_item):
+        if selected_menu_item == 'ssh':
             ssh_object.start(win_manager, stdscr, None)
 
     def ssh_enabled(self):
         return ssh_object.is_enabled
 
-    def return_to_main_loop(self,event, ssh_is_enabled):
+    def return_to_main_loop(self,event,ssh_is_enabled):
         if event in (
             CONST.CONST_LET_F_LWRCSE_KEY,
             CONST.CONST_LET_O_LWRCSE_KEY,

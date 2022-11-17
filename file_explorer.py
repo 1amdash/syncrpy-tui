@@ -9,7 +9,6 @@ from pop_ups import PopUpFileOpener
 from pop_ups import PopUpCopyFile
 from pathlib import Path
 
-
 class ResetPath:
     """Used to reset the path to '/' when FileExplorer messses up"""
     def __init__(self):
@@ -43,6 +42,7 @@ class FileExplorer:
         height, width = self.window.getmaxyx()
         start_y, start_x = self.window.getbegyx()
         self.ssh_path_depth = 0
+        self.depth = 0
         self.height = height
         self.width = width - 2
         self.start_y = start_y + 1
@@ -53,7 +53,7 @@ class FileExplorer:
         self.ssh_path = None
         self.ssh_path_hist = ['/']
         self.path_info = list()
-
+        
         self.draw_pad()
         self.explorer(path)
         self.menu()
@@ -106,16 +106,18 @@ class FileExplorer:
         """Requires list object"""
         data_list = list()
         for item in files_dirs:
-            _full_path = os.path.join(self.full_path, item)
-            #full_path = Path.joinpath(self.path, item)
-            is_dir = os.path.isdir(_full_path)
-            #is_dir = Path.is_dir(_full_path)
+            #_full_path = os.path.join(self.full_path, item)
+            _full_path = Path(self.full_path, item)
+            #is_dir = os.path.isdir(_full_path)
+            is_dir = Path.is_dir(_full_path)
             size = os.path.getsize(_full_path)
             #size = Path.stat().st_size
             size = human_readable_size(size, suffix="B")
             if is_dir:
-                item = os.path.join(' ',item)
-                item = os.path.normpath(item).strip()
+                #item = os.path.join(' ',item)
+                item = '/' + item
+                item = item.strip()
+                # item = os.path.normpath(item).strip()
             else:
                 item 
             data_list.append([item, size])
@@ -134,11 +136,13 @@ class FileExplorer:
             self.right_file_explorer.ssh_explorer(path)
 
     def get_full_path(self, path):
+        #self.depth_test = len(path.parts)
         if path == '/':
             self.path_info.append('/')
             self.depth = 0
         elif path == ('..'):
             if self.depth != 0:
+                
                 self.path_info.pop()
                 self.depth -= 1
         else:
@@ -196,7 +200,7 @@ class FileExplorer:
 
     def enter(self):
         """Changes the directory or opens file when called,"""
-        _selected_path = self.get_path()
+        _selected_path = self.get_file_name()
         is_dir = _selected_path.startswith('/')
 
         if self.position != 0:
@@ -287,14 +291,16 @@ class FileExplorer:
         PopUpDelete(sel_file)
 
     def copy_selected_items(self):
-        file_name = self.data[self.position][0]
-        if self.win_manager.active_panel == 0:
-            self.from_file = self.path + '/' + file_name
-            self.to_path = self.right_file_explorer.path
-        elif self.win_manager.active_panel == 1:
-            self.from_file = self.path + '/' + file_name
-            self.to_path = self.left_file_explorer.path
+        file_name = self.get_file_name()
         if self.position != 0:
+            if self.win_manager.active_panel == 0:
+                #self.from_file = self.path + '/' + file_name
+                self.from_file = self.left_file_explorer.full_path + '/' + file_name
+                self.to_path = self.right_file_explorer.full_path
+            elif self.win_manager.active_panel == 1:
+                self.from_file = self.right_file_explorer.full_path + '/' + file_name
+
+                self.to_path = self.left_file_explorer.full_path
             PopUpCopyFile(
                 self.file_explorers,
                 self.win_manager.stdscr,
@@ -325,7 +331,7 @@ class FileExplorer:
         if self.position == 0:
             self.scroller = 0
 
-    def get_path(self):
+    def get_file_name(self):
         return self.data[self.position][0]
 
     def is_dir(self, path):

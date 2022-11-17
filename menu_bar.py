@@ -44,13 +44,15 @@ class MenuBar(PopUpBase):
 
     def open(self, event=None):
         """Opens the file or options menu based on key press."""
+        QueueWinRefresh(self.stdscr)
+
         if event == CONST.CONST_LET_F_LWRCSE_KEY:
             return self.file_menu
         elif event == CONST.CONST_LET_O_LWRCSE_KEY:
             return self.options_menu
         else:
             return self.open_program
-    
+
     def open_program(self, event):
         if event == 'ssh':
             return 'start'           
@@ -65,21 +67,21 @@ class MenuBar(PopUpBase):
             # RSync('m')
             #glbl_opts.display()
 
+
+
     def file_menu(self, event):
         super().__init__(10, 15, 1, 1, self.stdscr)
         self.window = self.win
+
         self.stdscr.addstr(0,1, 'File', curses.color_pair(2) | curses.A_STANDOUT)
         self.menu_item = self.sub_menu
-        QueueWinRefresh(self.stdscr)
-        self.is_menu_open = True
 
     def options_menu(self, event):
         super().__init__(10, 15, 1, 6, self.stdscr)
         self.window = self.win
+
         self.stdscr.addstr(0,4+2, 'Options', curses.color_pair(2) | curses.A_STANDOUT)
         self.menu_item = self.sub_menu2
-        QueueWinRefresh(self.stdscr)
-        self.is_menu_open = True
 
     def close_menu(self):
         #self.window.clear()

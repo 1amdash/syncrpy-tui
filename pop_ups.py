@@ -240,7 +240,7 @@ def callbackFunc(thread):
 class PopUpCopyFile(PopUpBase):
     """CopyFile pop up, this is called from key 5 when SSH is not active.
 
-    This class kicks of a second thread to copy the file so it can continue
+    This class kicks off a second thread to copy the file so it can continue
     comparing the destination size to the source size and print a progress
     to the user.
     """
@@ -248,48 +248,42 @@ class PopUpCopyFile(PopUpBase):
     def __init__(self, file_explorers, stdscr, from_file, to_path, file_name):
         self.left_file_explorer = file_explorers[0]
         self.right_file_explorer = file_explorers[1]
-        y, x = stdscr.getmaxyx()
-        super().__init__(7, int(x/2), int(y/3)*1, int(x/4)*1, stdscr)
-        self.bar_width = int(x/2) - 2
+        screen_height, screen_width = stdscr.getmaxyx()
+        super().__init__(7, int(screen_width/2), int(screen_height/3), int(screen_width/4), stdscr)
+        self.bar_width = self.set_bar_width(screen_width)
+        QueueWinRefresh(self.win)
+        curses.doupdate()
+
         #try:
         # Start copying on a separate thread
         t = threading.Thread(
             name='CopyThread', target=CopyFile, args=(from_file, to_path), daemon=True)
         t.start()
         t.is_started = True
-        #except Exception as e:
-        #    error
-        #if error:
         progress = ProgressChecker(from_file, to_path, file_name, t, callback=callbackFunc)
-        try: #used for KeyBoard Interupt below
+        try:
             while True:
-                if e == None:
-                    progress.status()
-                    self.win.addstr(1, 1, 'from: ' + from_file )
-                    self.win.addstr(2, 1, 'to: ' + to_path)
-                    self.win.addstr(3, 1, str(progress.des_size) + ' / ' + str(progress.src_size))
-                    self.percentage = int(
-                        float(progress.des_num / progress.src_num)* self.bar_width
-                        )
-                    self.stars = '*' * self.percentage
-                    self.win.addstr(4, 1, "{0}{1}".format('[',self.stars))
-                    self.win.addstr(4,self.bar_width, ']')
-                else:
-                    self.win.addstr(3, 1, str(error))
-                    time.sleep(5)
+                progress.status()
+                self.win.addstr(1, 1, 'from: ' + from_file, curses.color_pair(2) )
+                self.win.addstr(2, 1, 'to: ' + to_path,curses.color_pair(2))
+                self.win.addstr(3, 1, str(progress.des_size) + ' / ' + str(progress.src_size),curses.color_pair(2))
+                self.percentage = self.get_bar_percentage(self.bar_width, progress.src_num, progress.des_num)
+
+                self.stars = '*' * self.percentage
+                self.win.addstr(4, 1, "{0}{1}".format('[',self.stars))
+                self.win.addstr(4,self.bar_width, ']')
                 QueueWinRefresh(self.win) 
                 curses.doupdate()
-                if progress.des_size == progress.src_size:
-                    self.win.addstr(5, 1, 'Complete')
-                    QueueWinRefresh(self.win)
-                    curses.doupdate()
-                    callbackFunc(t)
-                    time.sleep(3)
-                    return
+                self.is_bar_complete(progress.src_size, progress.des_size, self.win, thread=t)
+
+        except PermissionError as error:
+            self.win.addstr(4, 1, str(error) )
+
         except KeyboardInterrupt:
             callbackFunc(t)
-            QueueWinRefresh(self.win)
-            curses.doupdate()
+            
+        QueueWinRefresh(self.win)
+        curses.doupdate()
 
         if win_manager.active_panel == 0:
             right_file_explorer.explorer(self.right_file_explorer.cwd)
@@ -297,3 +291,21 @@ class PopUpCopyFile(PopUpBase):
         else:
             left_file_explorer.explorer(self.left_file_explorer.cwd)
             ResetWindow(self.left_file_explorer)
+
+    @staticmethod
+    def set_bar_width(screen_width):
+        return int(screen_width/2) - 2
+
+    @staticmethod
+    def get_bar_percentage(bar_width, src_num, des_num):
+        return int(float(des_num / src_num)* bar_width)
+
+    @staticmethod
+    def is_bar_complete(src_size, des_size, win, thread):
+        if des_size == src_size:
+            win.addstr(5, 1, 'Complete')
+            QueueWinRefresh(win)
+            curses.doupdate()
+            callbackFunc(thread)
+            time.sleep(3)
+            return

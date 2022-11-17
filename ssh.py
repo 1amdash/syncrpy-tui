@@ -89,19 +89,20 @@ class SSHForm(PopUpBase):
     info = []
     def __init__(self, stdscr):
         nlines, ncols = stdscr.getmaxyx()
+        form_height = 10
         nlines = int(nlines/4)
-        ncols = int(ncols/4)
+        form_width = int(ncols/4)
         begin_y = nlines
-        begin_x = ncols
-        super().__init__(10,ncols, begin_y,begin_x, stdscr)
+        begin_x = int(form_width * 1.5)
+        super().__init__(form_height, form_width, begin_y, begin_x, stdscr)
         self.win.bkgd(curses.color_pair(2))
         self.win.attron(curses.color_pair(2))
         self.win.border()
         self.win.addstr(1,1, 'IP Address')
         self.win.addstr(5,1, 'Username')
         QueueWinRefresh(self.win) 
-        self.textbox1 = TextBox(ncols-5, begin_y + 1, begin_x + 1)
-        self.textbox2 = TextBox(ncols-5, begin_y + 5, begin_x + 1)
+        self.textbox1 = TextBox(form_width-5, begin_y + 1, begin_x + 1)
+        self.textbox2 = TextBox(form_width-5, begin_y + 5, begin_x + 1)
         curses.doupdate()
         self.input()
 

@@ -21,6 +21,7 @@ class KeyPress:
         self.key_or_arrow_event()
 
     def __call__(self, *args, **kwds):
+        self.selected_menu_item = None
         return self.key
 
     def get_input(self, obj):
@@ -50,8 +51,10 @@ class KeyPress:
     def key_event(self):
         event = self.key
         if event == CONST.CONST_ENTER_KEY:
-            enter_key_event = KeyPress.enter_key(obj)
-            if enter_key_event is not None:
+            enter_key_event = self.enter_key()
+            self.selected_menu_item = self.items[self.position]
+
+            if enter_key_event is not None: #use this or selected_menu_item... test and delete one or other
                 event = enter_key_event
             return event
         #elif event == 'ssh':
@@ -65,48 +68,42 @@ class KeyPress:
         elif event == CONST.CONST_LET_Q_LWRCSE_KEY:
             return event
         elif event == CONST.CONST_LET_X_LWRCSE_KEY:
-            KeyPress.close_ssh_key(event)
+            self.close_ssh_key(event)
         elif event == CONST.CONST_NUM_5_KEY:
-            KeyPress.copy_key(obj)
+            self.copy_key()
         elif event == CONST.CONST_LET_N_LWRCSE_KEY:
-            KeyPress.new_dir_key(obj, event)
+            self.new_dir_key(obj, event)
         elif event == CONST.CONST_LET_B_LWRCSE_KEY:
-            KeyPress.to_bottom_key(obj)
+            self.to_bottom_key(obj)
         elif event == CONST.CONST_LET_T_LWRCSE_KEY:
-            KeyPress.to_top_key(obj)
+            self.to_top_key(obj)
         elif event == CONST.CONST_NUM_9_KEY:
-            KeyPress.delete_key(obj, items, position)
+            self.delete_key(obj, items, position)
         else:
             pass
 
-    @staticmethod
     def to_top_key(obj):
-        obj.go_to_top()
+        self.obj.go_to_top()
 
-    @staticmethod
     def to_bottom_key(obj):
-        obj.go_to_bottom()
+        self.obj.go_to_bottom()
 
-    @staticmethod
     def delete_key(obj, items, position):
         item = items[position][0]
-        obj.del_selected_items(obj._exp.path + '/' + item)
+        self.obj.del_selected_items(obj._exp.path + '/' + item)
 
-    @staticmethod
     def new_dir_key():
         PopUpNewDir()
 
-    @staticmethod
-    def enter_key(obj):
-        item = obj.enter()
+    def enter_key(self):
+        item = self.obj.enter()
         if item is not None:
             return item
 
-    @staticmethod
-    def close_ssh_key(obj):
-        if KeyPress.ssh_obj.is_enabled:
-            ssh_obj.ssh.close()
-            ssh_obj.enabled()
+    def close_ssh_key():
+        if self.ssh_obj.is_enabled:
+            self.ssh_obj.ssh.close()
+            self.ssh_obj.enabled()
             win_manager.upd_panel()
             #right_file_explorer.explorer(right_file_explorer.path)
             #right_file_explorer.menu()
@@ -114,6 +111,5 @@ class KeyPress:
         else:
             pass
 
-    @staticmethod
-    def copy_key(obj):
-        obj.copy_selected_items()
+    def copy_key(self):
+        self.obj.copy_selected_items()
