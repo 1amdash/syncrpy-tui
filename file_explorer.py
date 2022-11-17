@@ -64,7 +64,7 @@ class FileExplorer:
             if self.ssh_obj.is_enabled:
                 self.use_ssh_explorer(path)
                 return
-        #cleaned_path = self.clean_path(path)
+        #cleaned_path = self.clean_path(path)               #setting up for future use
         _full_path = self.get_full_path(path)               #create full path
         path_obj = Path(_full_path)
         file_dir_list = self.walk_tree(path_obj)            #get files and folders from directory
@@ -163,6 +163,7 @@ class FileExplorer:
         return data_list
 
     def get_file_explorers(self, file_explorers):
+        '''imports file explorers'''
         self.file_explorers = file_explorers
         self.left_file_explorer = file_explorers[0]
         self.right_file_explorer = file_explorers[1]
@@ -199,7 +200,7 @@ class FileExplorer:
             self.paths[oth_panel] = self.prev_paths[oth_panel]
 
     def enter(self):
-        """Changes the directory or opens file when called,"""
+        """Changes the directory or opens file when enter key is called"""
         _selected_path = self.get_file_name()
         is_dir = _selected_path.startswith('/')
 
@@ -242,6 +243,7 @@ class FileExplorer:
         self.ssh_abs_path = self.ssh_obj.sftp.normalize(path)
 
     def draw_pad(self):
+        '''draws pad larger than the file window so that it is scrollable'''
         self.pad = curses.newpad(self.height + 800, self.width) #size of pad
         self.pad.scrollok(True)
         self.pad.idlok(True)
@@ -249,6 +251,7 @@ class FileExplorer:
         self.pad.bkgd(curses.color_pair(1))
 
     def menu(self):
+        '''creates selectable list of items, files, folders'''
         self.pad.erase()
         self.height, self.width = self.window.getmaxyx()
         self.screen_height, self.screen_width = self.win_manager.stdscr.getmaxyx()
@@ -321,6 +324,7 @@ class FileExplorer:
             self.to_path = left_panel_path
         if self.position != 0:
             rsync_obj = RSync(0).start(self.from_file, self.to_path, file_name)
+            
     def scroll(self):
         if self.cursor > self.scroll_line:
             self.data_length = len(self.data) - 1
