@@ -3,7 +3,6 @@ import curses
 import constants as CONST
 from pop_ups import PopUpNewDir
 from navigate import navigate
-from get_input import GetInput
 
 
 class KeyPress:
@@ -12,6 +11,7 @@ class KeyPress:
     This Class utilizes the curses module to evaluate a keypress (arrow keys, enter, escape, etc)
     and complete an action."""
     def __init__(self, obj, items=None, position=None):
+        self.selected_menu_item = None
         self.obj = obj
         self.items = items
         self.tab_event = False
@@ -30,7 +30,6 @@ class KeyPress:
             self.key = obj.window.getch()
         except KeyboardInterrupt:
             return
-
 
     def key_or_arrow_event(self):
         if self.key in (curses.KEY_LEFT, curses.KEY_RIGHT, curses.KEY_UP, curses.KEY_DOWN):
@@ -53,7 +52,6 @@ class KeyPress:
         if event == CONST.CONST_ENTER_KEY:
             enter_key_event = self.enter_key()
             self.selected_menu_item = self.items[self.position]
-
             if enter_key_event is not None: #use this or selected_menu_item... test and delete one or other
                 event = enter_key_event
             return event
