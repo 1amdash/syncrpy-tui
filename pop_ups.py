@@ -1,4 +1,5 @@
 """pop_ups module"""
+from pathlib import Path
 import shutil
 import threading
 import constants as CONST
@@ -34,8 +35,8 @@ class PopUpNewDir(PopUpBase):
     def __init__(self, obj):
         self.obj = obj
         stdscr = self.obj.win_manager.stdscr
-        left_file_explorer = self.obj.left_file_explorer
-        right_file_explorer = self.obj.right_file_explorer
+        self.left_file_explorer = self.obj.left_file_explorer
+        self.right_file_explorer = self.obj.right_file_explorer
         y,x = stdscr.getmaxyx()
         nlines = int(y/3)
         ncols = int(x/2)
@@ -65,12 +66,14 @@ class PopUpNewDir(PopUpBase):
 
     def create_dir(self):
         if self.obj.win_manager.active_panel == 0:
-            new_directory_location = left_file_explorer.abs_path + '/'
+            new_directory_location = self.left_file_explorer.full_path + '/'
         else:
-            new_directory_location = right_file_explorer.abs_path + '/'
-        os.mkdir(new_directory_location + self.new_dir_name)
-        left_file_explorer.explorer(left_file_explorer.abs_path)
-        right_file_explorer.explorer(right_file_explorer.abs_path)
+            new_directory_location = right_file_explorer.full_path + '/'
+        p = Path(new_directory_location, self.new_dir_name)
+        p.mkdir()
+        #os.mkdir(new_directory_location + self.new_dir_name)
+        #self.left_file_explorer.explorer(self.left_file_explorer.full_path)
+        #self.right_file_explorer.explorer(self.right_file_explorer.full_path)
         self.close() 
 
     def cancel(self):           
@@ -79,8 +82,8 @@ class PopUpNewDir(PopUpBase):
 
     def close(self):
         QueueWinRefresh(self.win)
-        ResetWindow(left_file_explorer)
-        ResetWindow(right_file_explorer)
+        ResetWindow(self.left_file_explorer)
+        ResetWindow(self.right_file_explorer)
 
 class PopUpDelete(PopUpBase):
     """Creates a pop up and deletes a file after ok/cancel"""
@@ -115,14 +118,14 @@ class PopUpDelete(PopUpBase):
                     except PermissionError:
                         self.win.addstr(2,1,'permission denied', curses.color_pair(8))
                         QueueWinRefresh(self.win) 
-                left_file_explorer.explorer(left_file_explorer.abs_path)
-                right_file_explorer.explorer(right_file_explorer.abs_path)
+                self.left_file_explorer.explorer(self.left_file_explorer.abs_path)
+                self.right_file_explorer.explorer(self.right_file_explorer.abs_path)
             else:
                 self.win.addstr(2,1, 'Delete cancelled.', curses.color_pair(8))
             QueueWinRefresh(self.win) 
             time.sleep(.5)
-            ResetWindow(left_file_explorer)
-            ResetWindow(right_file_explorer)
+            ResetWindow(self.left_file_explorer)
+            ResetWindow(self.right_file_explorer)
             return
 
     def action_delete_file(self, file_to_delete):
@@ -292,10 +295,10 @@ class PopUpCopyFile(PopUpBase):
         curses.doupdate()
 
         if win_manager.active_panel == 0:
-            right_file_explorer.explorer(self.right_file_explorer.cwd)
+            self.right_file_explorer.explorer(self.right_file_explorer.cwd)
             ResetWindow(self.right_file_explorer)
         else:
-            left_file_explorer.explorer(self.left_file_explorer.cwd)
+            self.left_file_explorer.explorer(self.left_file_explorer.cwd)
             ResetWindow(self.left_file_explorer)
 
     @staticmethod
