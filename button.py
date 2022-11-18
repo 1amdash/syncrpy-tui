@@ -2,7 +2,6 @@
 import curses
 import constants as CONST
 from queue_window_refresh import QueueWinRefresh
-from key_press import KeyPress
 
 
 class Button:
