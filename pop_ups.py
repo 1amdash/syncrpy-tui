@@ -7,6 +7,8 @@ from queue_window_refresh import QueueWinRefresh
 from reset_window import ResetWindow
 from copy_file import CopyFile
 from progress_checker import ProgressChecker
+from button import Button
+from text_box import TextBox
 
 class PopUpBase:
     """Creates a new window with basic sizing and formatting for various popups"""
@@ -29,8 +31,12 @@ class PopUpBase:
         
 class PopUpNewDir(PopUpBase):
     """Creates a pop up and creates a new directory"""
-    def __init__(self):
-        y, x = win_manager.screen_size()
+    def __init__(self, obj):
+        self.obj = obj
+        stdscr = self.obj.win_manager.stdscr
+        left_file_explorer = self.obj.left_file_explorer
+        right_file_explorer = self.obj.right_file_explorer
+        y,x = stdscr.getmaxyx()
         nlines = int(y/3)
         ncols = int(x/2)
         begin_y = int(y/3)*1
@@ -58,7 +64,7 @@ class PopUpNewDir(PopUpBase):
             self.cancel()
 
     def create_dir(self):
-        if win_manager.active_panel == 0:
+        if self.obj.win_manager.active_panel == 0:
             new_directory_location = left_file_explorer.abs_path + '/'
         else:
             new_directory_location = right_file_explorer.abs_path + '/'

@@ -70,7 +70,7 @@ class KeyPress:
         elif event == CONST.CONST_NUM_5_KEY:
             self.copy_key()
         elif event == CONST.CONST_LET_N_LWRCSE_KEY:
-            self.new_dir_key(obj, event)
+            self.new_dir_key()
         elif event == CONST.CONST_LET_B_LWRCSE_KEY:
             self.to_bottom_key(obj)
         elif event == CONST.CONST_LET_T_LWRCSE_KEY:
@@ -90,8 +90,8 @@ class KeyPress:
         item = items[position][0]
         self.obj.del_selected_items(obj._exp.path + '/' + item)
 
-    def new_dir_key():
-        PopUpNewDir()
+    def new_dir_key(self):
+        PopUpNewDir(self.obj)
 
     def enter_key(self):
         item = self.obj.enter()
