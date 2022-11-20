@@ -34,7 +34,8 @@ class Button:
                 return
             else:
                 event = self.window.getch()
-                event = KeyPress.event(KeyPress, self.item_list, self.position)
+                return event
+                #event = KeyPress.event(KeyPress, self.item_list, self.position)
 
     def event(self, action):
         self.client_ready = action

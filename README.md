@@ -1,21 +1,21 @@
-# syncrpy-tui
-Python Rsync TUI
-### Relies on Paramiko and Curses.
+README
 
-The goal of this TUI is to create an easy to use browser/rsync tool.
+GNU SyncrPy-TUI is a terminal program interface. SyncrPy-TUI is a local and
+remote file-manager specifcally with the goal in mind of managing remote
+files and copying to/from remote systems using RSync.
 
-keyboard keys:
+Use:
 
-q = quit
+Arrow Keys: Move throughout the menus
+Tab Key: Switch between left and right file panels
+Q Key: Quit
+9 Key: Delete File OR Directory
+5 Key: Copy File or Directory
+--if SSH is activated, use RSync
+N Key: Make New Directory
+X Key: Close SSH Connection, if established
 
-9 = DELETS FILE OR DIRECTORY
+Dependencies:
 
-5 = copy
-
-if ssh is activated 5 = rsync
-
-n = make directory
-
-x = closes an ssh connection if open
-
-tab = switches windows
+Curses
+Paramiko

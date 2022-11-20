@@ -4,6 +4,8 @@ import shutil
 import threading
 import constants as CONST
 import curses
+from display import Display
+#from key_press import KeyPress
 from queue_window_refresh import QueueWinRefresh
 from reset_window import ResetWindow
 from copy_file import CopyFile
@@ -32,7 +34,7 @@ class PopUpBase:
         
 class PopUpNewDir(PopUpBase):
     """Creates a pop up and creates a new directory"""
-    def __init__(self, obj):
+    def __init__(self, obj, KeyPress):
         self.obj = obj
         stdscr = self.obj.win_manager.stdscr
         self.left_file_explorer = self.obj.left_file_explorer
@@ -48,14 +50,16 @@ class PopUpNewDir(PopUpBase):
         QueueWinRefresh(self.win) 
         new_dir_textbox = TextBox(ncols-2, begin_y + 1, begin_x + 1)
         self.new_dir_button = Button(self.win, ['OK', 'CANCEL'])
+        KeyPress(self.new_dir_button)
         ready = False
         while ready is not True:
             self.text_and_status = new_dir_textbox.action()
             ready = self.text_and_status[1]
             self.new_dir_name = self.text_and_status[0]
             self.new_dir_button.event(ready)
-            self.new_dir_button.display()
-
+            #self.new_dir_button.display()
+            KeyPress(self.new_dir_button)
+            Display(self.new_dir_button)
             if self.new_dir_button.button_press_cancel:
                 break
         

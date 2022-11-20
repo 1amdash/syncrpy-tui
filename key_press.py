@@ -1,9 +1,8 @@
 """KeyPress Class"""
 import curses
 import constants as CONST
-from pop_ups import PopUpNewDir
 from navigate import navigate
-
+from pop_ups import PopUpNewDir
 
 class KeyPress:
     """Call function based on keypress
@@ -35,7 +34,8 @@ class KeyPress:
         if self.key in (curses.KEY_LEFT, curses.KEY_RIGHT, curses.KEY_UP, curses.KEY_DOWN):
             self.arrow_event()
         else:
-            self.key_event()
+            #self.key_event()
+            return self.key_event()
         
     def arrow_event(self):
         if self.key == curses.KEY_UP:
@@ -70,7 +70,8 @@ class KeyPress:
         elif event == CONST.CONST_NUM_5_KEY:
             self.copy_key()
         elif event == CONST.CONST_LET_N_LWRCSE_KEY:
-            self.new_dir_key()
+            #self.new_dir_key()
+            return PopUpNewDir(self.obj, self)
         elif event == CONST.CONST_LET_B_LWRCSE_KEY:
             self.to_bottom_key(obj)
         elif event == CONST.CONST_LET_T_LWRCSE_KEY:
@@ -92,6 +93,7 @@ class KeyPress:
 
     def new_dir_key(self):
         PopUpNewDir(self.obj)
+
 
     def enter_key(self):
         item = self.obj.enter()

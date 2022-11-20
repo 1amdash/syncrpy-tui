@@ -5,9 +5,8 @@ import curses
 import curses.textpad
 import curses.panel
 from pathlib import Path
-
-from tomlkit import key
 import constants as CONST
+from pop_ups import PopUpNewDir
 from options_menu import OptionsMenu
 from ssh import SSH
 from window_manager import WinManager
@@ -139,7 +138,7 @@ if __name__ == '__main__':
     left_win = win_manager.draw_left_win()
     right_win = win_manager.draw_right_win()
     ssh_object = SSH()
-    left_file_explorer = FileExplorer(win_manager, left_win)
+    left_file_explorer = FileExplorer(win_manager, left_win, path='/home/apollo/.adir1')
     right_file_explorer = FileExplorer(win_manager, right_win, ssh_object=ssh_object)
     file_explorers = [left_file_explorer, right_file_explorer]
     left_file_explorer.get_file_explorers(file_explorers)
