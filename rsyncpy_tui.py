@@ -4,9 +4,7 @@ import os
 import curses
 import curses.textpad
 import curses.panel
-from pathlib import Path
 import constants as CONST
-from pop_ups import PopUpNewDir
 from options_menu import OptionsMenu
 from ssh import SSH
 from window_manager import WinManager
@@ -82,7 +80,6 @@ class Main:
                     _menu_bar.menu_item,
                     _menu_bar.position
                     )
-                
                 self.call_ssh(_key_press.selected_menu_item)
                 _ssh_is_enabled = self.ssh_enabled()
                 ready_to_return = self.return_to_main_loop(_key_press.key, _ssh_is_enabled)
@@ -138,7 +135,7 @@ if __name__ == '__main__':
     left_win = win_manager.draw_left_win()
     right_win = win_manager.draw_right_win()
     ssh_object = SSH()
-    left_file_explorer = FileExplorer(win_manager, left_win, path='/home/apollo/.adir1')
+    left_file_explorer = FileExplorer(win_manager, left_win)
     right_file_explorer = FileExplorer(win_manager, right_win, ssh_object=ssh_object)
     file_explorers = [left_file_explorer, right_file_explorer]
     left_file_explorer.get_file_explorers(file_explorers)

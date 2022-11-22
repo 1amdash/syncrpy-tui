@@ -71,7 +71,7 @@ class KeyPress:
             self.copy_key()
         elif event == CONST.CONST_LET_N_LWRCSE_KEY:
             #self.new_dir_key()
-            return PopUpNewDir(self.obj, self)
+            return PopUpNewDir(self.obj, KeyPress)
         elif event == CONST.CONST_LET_B_LWRCSE_KEY:
             self.to_bottom_key(obj)
         elif event == CONST.CONST_LET_T_LWRCSE_KEY:

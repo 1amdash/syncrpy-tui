@@ -46,22 +46,34 @@ class PopUpNewDir(PopUpBase):
         begin_x = int(x/4)*1
         super().__init__(nlines, ncols, begin_y, begin_x, stdscr)
         self.win.bkgd(curses.color_pair(2))
-        self.win.addstr(1, 1, 'new dir: ', curses.color_pair(2))
-        QueueWinRefresh(self.win) 
-        new_dir_textbox = TextBox(ncols-2, begin_y + 1, begin_x + 1)
+        self.win.addstr(1, 1, 'New Directory:', curses.color_pair(2))
+        QueueWinRefresh(self.win)
+        self.new_dir_textbox = TextBox(ncols-2, begin_y + 1, begin_x + 1)
         self.new_dir_button = Button(self.win, ['OK', 'CANCEL'])
-        KeyPress(self.new_dir_button)
+        self.new_dir_form()
+
+    def new_dir_form(self):   
+        return_to_loop = False
         ready = False
+
         while ready is not True:
-            self.text_and_status = new_dir_textbox.action()
+
+            self.text_and_status = self.new_dir_textbox.action()
             ready = self.text_and_status[1]
             self.new_dir_name = self.text_and_status[0]
             self.new_dir_button.event(ready)
             #self.new_dir_button.display()
-            KeyPress(self.new_dir_button)
-            Display(self.new_dir_button)
+            while return_to_loop is not True:
+                key_press = KeyPress(self.new_dir_button, self.new_dir_button.item_list, self.new_dir_button.position)
+                Display(self.new_dir_button)
+                if key_press.key in (CONST.CONST_TAB_ENTER, CONST.CONST_TAB_KEY):
+                    return_to_loop = True
+                
+
             if self.new_dir_button.button_press_cancel:
                 break
+            elif self.new_dir_button.button_press_ok:
+                ready = True
         
         if ready:
             self.create_dir()

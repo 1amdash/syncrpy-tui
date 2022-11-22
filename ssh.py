@@ -108,7 +108,7 @@ class SSHForm(PopUpBase):
 
     def input(self):  
         form_ready = False
-        while form_ready != True:
+        while form_ready is not True:
             curses.curs_set(2)
             self.win.move(3, 2)
             QueueWinRefresh(self.win)

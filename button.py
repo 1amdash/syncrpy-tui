@@ -37,8 +37,8 @@ class Button:
                 return event
                 #event = KeyPress.event(KeyPress, self.item_list, self.position)
 
-    def event(self, action):
-        self.client_ready = action
+    def event(self, client_ready):
+        self.client_ready = client_ready
 
     def menu(self):
         space = 10
