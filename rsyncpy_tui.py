@@ -4,7 +4,6 @@ import os
 import curses
 import curses.textpad
 import curses.panel
-from typing_extensions import Self
 import constants as CONST
 from options_menu import OptionsMenu
 from ssh import SSH
