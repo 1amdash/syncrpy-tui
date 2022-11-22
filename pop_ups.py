@@ -50,9 +50,9 @@ class PopUpNewDir(PopUpBase):
         QueueWinRefresh(self.win)
         self.new_dir_textbox = TextBox(ncols-2, begin_y + 1, begin_x + 1)
         self.new_dir_button = Button(self.win, ['OK', 'CANCEL'])
-        self.new_dir_form()
+        self.new_dir_form(KeyPress)
 
-    def new_dir_form(self):   
+    def new_dir_form(self,KeyPress):   
         return_to_loop = False
         ready = False
 
@@ -66,7 +66,7 @@ class PopUpNewDir(PopUpBase):
             while return_to_loop is not True:
                 key_press = KeyPress(self.new_dir_button, self.new_dir_button.item_list, self.new_dir_button.position)
                 Display(self.new_dir_button)
-                if key_press.key in (CONST.CONST_TAB_ENTER, CONST.CONST_TAB_KEY):
+                if key_press.key in (CONST.CONST_ENTER_KEY, CONST.CONST_TAB_KEY):
                     return_to_loop = True
                 
 
@@ -103,7 +103,9 @@ class PopUpNewDir(PopUpBase):
 
 class PopUpDelete(PopUpBase):
     """Creates a pop up and deletes a file after ok/cancel"""
-    def __init__(self, sel_file):
+    def __init__(self, obj, sel_file):
+        self.obj = obj
+        stdscr = self.obj.win_manager.stdscr
         self.sel_file = sel_file.replace('//','/')
         y, x = stdscr.getmaxyx()
         nlines = int(y/3)

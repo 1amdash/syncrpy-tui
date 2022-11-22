@@ -9,6 +9,7 @@ from human_readable_size import human_readable_size
 from window_manager import WinManager
 from pop_ups import PopUpFileOpener
 from pop_ups import PopUpCopyFile
+from pop_ups import PopUpDelete
 
 class ResetPath:
     """Used to reset the path to '/' when FileExplorer messses up"""
@@ -108,18 +109,13 @@ class FileExplorer:
         Requires list object"""
         data_list = list()
         for item in files_dirs:
-            #_full_path = os.path.join(self.full_path, item)
             _full_path = Path(path_obj, item)
-            #is_dir = os.path.isdir(_full_path)
             is_dir = Path.is_dir(_full_path)
-            size = os.path.getsize(_full_path)
-            #size = Path.stat().st_size
+            size = Path(_full_path).stat().st_size
             size = human_readable_size(size, suffix="B")
             if is_dir:
-                #item = os.path.join(' ',item)
                 item = '/' + item
                 item = item.strip()
-                # item = os.path.normpath(item).strip()
             else:
                 item 
             data_list.append([item, size])
@@ -221,33 +217,39 @@ class FileExplorer:
         """Changes the directory or opens file when enter key is called
 
         Expects full path string"""
-        _selected_path = self.get_file_name()
-        is_dir = _selected_path.startswith('/')
         first_position = 0
+        _selected_path = self.get_file_name()
         if self.position is first_position:
-            self.go_up_level(_selected_path)
-            _full_path = self.join_path()
-            if self.ssh_obj:
-                if self.ssh_obj.is_enabled and self.win_manager.active_panel == 1:
-                    self.par_dir = '..'
-            self.set_paths(_full_path)
-            self.explorer(_full_path)
-        elif self.position > first_position:
-            _path_to_open = self.join_path_str(self.full_path,_selected_path)
-            if is_dir:
-                if WinManager.active_panel == 1:
-                    if self.ssh_obj.is_enabled:
-                        self.new_path =  self.path
-                self.pad_refresh()
-                self.position = self.scroller = 0
-                self.paths[self.win_manager.active_panel] = _path_to_open
-                self.go_down_level(_selected_path)
-                _full_path = self.join_path()
-                self.set_paths(_path_to_open)
-                self.explorer(_path_to_open)
-            else:
-                PopUpFileOpener(self.file_explorers, self.win_manager.stdscr, _path_to_open)
+            self.enter_select_up_level(_selected_path)
+        else:
+            self.enter_select_folder_file(_selected_path)
         self.win_manager.upd_panel(self.win_manager.active_panel, self.full_path)
+
+    def enter_select_up_level(self, _selected_path):
+        if self.ssh_obj:
+            if self.ssh_obj.is_enabled and self.win_manager.active_panel == 1:
+                self.par_dir = '..'
+        self.go_up_level(_selected_path)
+        _full_path = self.join_path()
+        self.set_paths(_full_path)
+        self.explorer(_full_path)
+
+    def enter_select_folder_file(self, _selected_path):
+        is_dir = _selected_path.startswith('/')
+        _path_to_open = self.join_path_str(self.full_path,_selected_path)
+        if is_dir:
+            if WinManager.active_panel == 1:
+                if self.ssh_obj.is_enabled:
+                    self.new_path =  self.path
+            #self.pad_refresh()
+            self.position = self.scroller = 0
+            #self.paths[self.win_manager.active_panel] = _path_to_open
+            self.go_down_level(_selected_path)
+            _full_path = self.join_path()
+            self.set_paths(_path_to_open)
+            self.explorer(_path_to_open)
+        else:
+            PopUpFileOpener(self.file_explorers, self.win_manager.stdscr, _path_to_open)
 
     def ssh_explorer_attr(self):
         if glbl_opts.low_bandwidth:
@@ -277,9 +279,9 @@ class FileExplorer:
         self.height, self.width = self.window.getmaxyx()
         self.screen_height, self.screen_width = self.win_manager.stdscr.getmaxyx()
         self.max_height = self.height -2
-        self.bottom = self.max_height #+ len(self.tup) #self.max_height
+        self.bottom = self.max_height
         self.scroll_line = self.max_height - 3
-        self.pad.setscrreg(0,self.max_height) #self.bottom -2)
+        self.pad.setscrreg(0,self.max_height)
         self.width = self.width - 2
         self.pad_refresh = lambda: self.pad.noutrefresh(
             self.scroller,
@@ -312,7 +314,7 @@ class FileExplorer:
         self.scroller = data_length - self.scroll_line - 1
 
     def del_selected_items(self, sel_file):
-        PopUpDelete(sel_file)
+        PopUpDelete(self, sel_file)
 
     def copy_selected_items(self):
         file_name = self.get_file_name()

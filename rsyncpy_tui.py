@@ -4,6 +4,7 @@ import os
 import curses
 import curses.textpad
 import curses.panel
+from typing_extensions import Self
 import constants as CONST
 from options_menu import OptionsMenu
 from ssh import SSH
@@ -42,11 +43,7 @@ def end_curses():
 
 class Main:
     """Main function handles high-level switching between windows and file menus."""
-    def __init__(self, menu_bar, win_manager, file_explorers, status_bar):
-        _menu_bar = menu_bar
-        _win_manager = win_manager
-        _file_explorers = file_explorers
-        _status_bar = status_bar
+    def __init__(self, _menu_bar, _win_manager, _file_explorers, _status_bar):
         _current_panel = 0
         ready_to_exit = False
         while ready_to_exit is not True:
@@ -80,7 +77,7 @@ class Main:
                     _menu_bar.menu_item,
                     _menu_bar.position
                     )
-                self.call_ssh(_key_press.selected_menu_item)
+                self.call_ssh(_key_press.selected_menu_item, _menu_bar)
                 _ssh_is_enabled = self.ssh_enabled()
                 ready_to_return = self.return_to_main_loop(_key_press.key, _ssh_is_enabled)
             _menu_bar.close_menu()
@@ -88,18 +85,19 @@ class Main:
         else:
             return _call_menu_event
 
-    def update_all_views(self, _menu_bar, _file_explorers, _status_bar):
-        _left_file_explorer = _file_explorers[0]
-        _right_file_explorer = _file_explorers[1]
-        _menu_bar.draw_menu_bar()
-        ResetWindow(_left_file_explorer)
-        ResetWindow(_right_file_explorer)
-        _status_bar.refresh(1)
-        curses.doupdate()
-
-    def call_ssh(self, selected_menu_item):
+    def call_ssh(self, selected_menu_item, _menu_bar):
         if selected_menu_item == 'ssh':
+            _menu_bar.close_menu()
             ssh_object.start(win_manager, stdscr, None)
+            self.update_all_views()
+
+    def update_all_views(self):
+        stdscr.noutrefresh()
+        menu_bar.draw_menu_bar()
+        ResetWindow(left_file_explorer)
+        ResetWindow(right_file_explorer)
+        status_bar.update(win_manager.active_panel)
+        curses.doupdate()
 
     def ssh_enabled(self):
         return ssh_object.is_enabled

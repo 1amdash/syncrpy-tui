@@ -73,23 +73,23 @@ class KeyPress:
             #self.new_dir_key()
             return PopUpNewDir(self.obj, KeyPress)
         elif event == CONST.CONST_LET_B_LWRCSE_KEY:
-            self.to_bottom_key(obj)
+            self.to_bottom_key(self.obj)
         elif event == CONST.CONST_LET_T_LWRCSE_KEY:
-            self.to_top_key(obj)
+            self.to_top_key(self.obj)
         elif event == CONST.CONST_NUM_9_KEY:
-            self.delete_key(obj, items, position)
+            self.delete_key(self.obj,self.items, self.position)
         else:
             pass
 
-    def to_top_key(obj):
+    def to_top_key(self,obj):
         self.obj.go_to_top()
 
-    def to_bottom_key(obj):
+    def to_bottom_key(self,obj):
         self.obj.go_to_bottom()
 
-    def delete_key(obj, items, position):
+    def delete_key(self,obj, items, position):
         item = items[position][0]
-        self.obj.del_selected_items(obj._exp.path + '/' + item)
+        self.obj.del_selected_items(obj.full_path + item)
 
     def new_dir_key(self):
         PopUpNewDir(self.obj)

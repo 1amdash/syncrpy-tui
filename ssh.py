@@ -55,19 +55,16 @@ class SSH:
                     self.sftp = self.ssh.open_sftp()
                     self.win_manager.update_headers(1)
                     return_to_curses = self.enabled()
-                except AuthenticationError as error:
-                    print(error)
-                    continue
-                except (ConnectionError, ConnectionRefusedError) as error:
-                    print(error)
-                    print('\n')
-                    sleep(3)
-                    return_to_curses = True
-                except Exception as error:
-                    print(error)
-                    print('Returning to curses.')
-                    sleep(3)
-                    return_to_curses = True
+                except (AuthenticationError, ConnectionError, ConnectionRefusedError, Exception) as error:
+                    return_to_curses = self.print_error(error)
+
+    def print_error(self, error):
+        print('\n')
+        print(error)
+        print('Returning to curses.')
+        print('\n')
+        sleep(1)
+        return True
 
     def get_transport(self, ssh):
         self.transport = ssh.get_transport()
