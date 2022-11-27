@@ -40,6 +40,7 @@ class FileExplorer:
         self.path_parts = self.home._parts
         self.path_depth = len(self.path_parts)
         _full_path = self.join_path(self.path_parts)
+        self.full_path = _full_path
 
         self.ssh_obj = ssh_object
         self.win_manager = win_manager
@@ -56,7 +57,6 @@ class FileExplorer:
         self.position = 0
         self.scroller = 0
         self.event = None
-        self.full_path = None
         self.ssh_full_path = '/'
         self.ssh_path_hist = ['/']
         self.ssh_path_parts = ['/']
@@ -85,7 +85,7 @@ class FileExplorer:
         _ssh = None
         while _ssh is True:
             _ssh = self.use_ssh_explorer()
-        self.full_path = path
+        #self.full_path = path
         path_obj = self.obj_or_str(path)
         data_list = self.walk_tree(path_obj)
         data_list = self.file_dir_iter(path_obj, data_list)
@@ -97,16 +97,16 @@ class FileExplorer:
 
 
     def ssh_explorer(self, ssh_path):
-        self.next_ssh_path = self.get_full_path(ssh_path)
-        ssh_files_folders_dir = self.ssh_obj.sftp.listdir(self.next_ssh_path)
-        ssh_files_folders_attr = self.ssh_obj.sftp.listdir_attr(self.next_ssh_path)
-        self.ssh_get_abs_path(self.next_ssh_path)
+        #self.next_ssh_path = self.get_full_path(ssh_path)
+        ssh_files_folders_dir = self.ssh_obj.sftp.listdir(ssh_path)
+        ssh_files_folders_attr = self.ssh_obj.sftp.listdir_attr(ssh_path)
+        #self.ssh_get_abs_path(self.next_ssh_path)
         data_list = self.ssh_parse_files(ssh_files_folders_dir, ssh_files_folders_attr)
 
         data_list = self.sort_file_list(data_list)
         data_list = self.create_list_index(data_list)
         self.data = self.list_to_dict(data_list)
-        self.data = self.root_or_dot_dot(self.next_ssh_path, self.data)
+        self.data = self.root_or_dot_dot(ssh_path, self.data)
 
     def join_path(self, _path_parts):
         path = '/'.join(map(str, _path_parts))
@@ -424,8 +424,8 @@ class FileExplorer:
     def get_file_name(self):
         return self.data[self.position][0]
 
-    def is_dir(self, path):
-        if path.startswith('/'):
-            self.full_path = os.path.join(path, '')
-            return True
-        return False
+    # def is_dir(self, path):
+    #     if path.startswith('/'):
+    #         self.full_path = os.path.join(path, '')
+    #         return True
+    #     return False

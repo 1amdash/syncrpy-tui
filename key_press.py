@@ -10,7 +10,8 @@ class KeyPress:
 
     This Class utilizes the curses module to evaluate a keypress (arrow keys, enter, escape, etc)
     and complete an action."""
-    def __init__(self, obj, items=None, position=None):
+    def __init__(self, obj, items=None, position=None, updateallviews=None):
+        self.updateallviews = updateallviews
         self.selected_menu_item = None
         self.obj = obj
         self.items = items
@@ -106,7 +107,8 @@ class KeyPress:
             self.obj.ssh_obj.ssh.close()
             self.obj.ssh_obj.enabled()
             self.obj.explorer(self.obj.full_path)
-            ResetWindow(self.obj.right_file_explorer)
+            #ResetWindow(self.obj.right_file_explorer)
+            self.updateallviews()
             #self.obj.win_manager.upd_panel(self.obj.win_manager.active_panel, )
             #right_file_explorer.explorer(right_file_explorer.path)
             #right_file_explorer.menu()

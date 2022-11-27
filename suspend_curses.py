@@ -8,9 +8,9 @@ class SuspendCurses:
         self.stdscr = stdscr
     """Temporarily leave curses while rsync runs"""
     def __enter__(self):
-        self.stdscr.clear()
-        QueueWinRefresh(self.stdscr) #stdscr.noutrefresh()
-        curses.doupdate()
+        #self.stdscr.clear()
+        #QueueWinRefresh(self.stdscr) #stdscr.noutrefresh()
+        #curses.doupdate()
         self.stdscr.keypad(0)
         curses.echo()
         curses.nocbreak()

@@ -28,14 +28,14 @@ class StatusBar:
         self.status_bar_area.redrawln(self.height_main-1,0)
         self.refresh('0')
 
-    def update(self, panel):
+    def update(self, panel, ssh_object=None):
         self.status_bar_area.move(self.height_main-1, 0)
         self.status_bar_area.clrtoeol()
         panel = 'active panel: ' + str(panel)
-        if SSH.is_enabled:
-            ssh_status = 'SSH Enabled'
-        else:
-            ssh_status = 'SSH Disabled'
+        ssh_status = 'SSH Disabled'
+        if ssh_object:
+            if ssh_object.is_enabled:
+                ssh_status = 'SSH Enabled'
         self.statusbar_remaining = self.width_main - len(panel) - len(ssh_status) - 1
         spaces = ' ' * self.statusbar_remaining
         self.status_bar_str = f'{panel}{spaces}{ssh_status}'

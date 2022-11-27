@@ -52,9 +52,10 @@ class Main:
                 _file_explorers[self._current_panel],
                 _file_explorers[self._current_panel].data,
                 _file_explorers[self._current_panel].position,
+                self.update_all_views
                 )
             _file_explorers[self._current_panel].scroll()
-            self.call_menu(key_press, _menu_bar, left_file_explorer)
+            self.call_menu(key_press, _menu_bar, left_file_explorer, _status_bar)
             self._current_panel = self.switch_panels(key_press.tab_event, self._current_panel, _status_bar)
             ready_to_exit = self.exit_main_loop(key_press.key)
             curses.doupdate()
@@ -63,7 +64,7 @@ class Main:
         if event == CONST.CONST_LET_Q_LWRCSE_KEY:
             return True
 
-    def call_menu(self, key_press, _menu_bar, _left_file_explorer):
+    def call_menu(self, key_press, _menu_bar, _left_file_explorer, _status_bar):
         _call_menu_event = key_press.menu_event
         _key_press = key_press.key
         ready_to_return = False
@@ -76,7 +77,7 @@ class Main:
                     _menu_bar.menu_item,
                     _menu_bar.position
                     )
-                self.call_ssh(_key_press.selected_menu_item, _menu_bar)
+                self.call_ssh(_key_press.selected_menu_item, _menu_bar, _status_bar)
                 _ssh_is_enabled = self.ssh_enabled()
                 ready_to_return = self.return_to_main_loop(_key_press.key, _ssh_is_enabled)
             _menu_bar.close_menu()
@@ -84,21 +85,23 @@ class Main:
         else:
             return _call_menu_event
 
-    def call_ssh(self, selected_menu_item, _menu_bar ):
+    def call_ssh(self, selected_menu_item, _menu_bar, _status_bar):
         if selected_menu_item == 'ssh':
             _menu_bar.close_menu()
             ssh_object.start(win_manager, stdscr)
             right_file_explorer.explorer('/')
             self._current_panel = win_manager.set_active_panel(self._current_panel)
-            #_status_bar.refresh(_current_panel)
+            _status_bar.update(self._current_panel, ssh_object)
+
             self.update_all_views()
 
+
     def update_all_views(self):
-        stdscr.noutrefresh()
         menu_bar.draw_menu_bar()
+        status_bar.update(win_manager.active_panel, ssh_object)
+        stdscr.noutrefresh()
         ResetWindow(left_file_explorer)
         ResetWindow(right_file_explorer)
-        status_bar.update(win_manager.active_panel)
         curses.doupdate()
 
     def ssh_enabled(self):
