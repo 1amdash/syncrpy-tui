@@ -43,19 +43,19 @@ def end_curses():
 class Main:
     """Main function handles high-level switching between windows and file menus."""
     def __init__(self, _menu_bar, _win_manager, _file_explorers, _status_bar):
-        _current_panel = 0
+        self._current_panel = 0
         ready_to_exit = False
         while ready_to_exit is not True:
-            _win_manager.upd_panel(_current_panel, _file_explorers[_current_panel].full_path)
-            Display(_file_explorers[_current_panel])
+            #_win_manager.upd_panel(self._current_panel, _file_explorers[self._current_panel].full_path)
+            Display(_file_explorers[self._current_panel])
             key_press = KeyPress(
-                _file_explorers[_current_panel],
-                _file_explorers[_current_panel].data,
-                _file_explorers[_current_panel].position,
+                _file_explorers[self._current_panel],
+                _file_explorers[self._current_panel].data,
+                _file_explorers[self._current_panel].position,
                 )
-            _file_explorers[_current_panel].scroll()
+            _file_explorers[self._current_panel].scroll()
             self.call_menu(key_press, _menu_bar, left_file_explorer)
-            _current_panel = self.switch_panels(key_press.tab_event, _current_panel, _status_bar)
+            self._current_panel = self.switch_panels(key_press.tab_event, self._current_panel, _status_bar)
             ready_to_exit = self.exit_main_loop(key_press.key)
             curses.doupdate()
 
@@ -84,10 +84,13 @@ class Main:
         else:
             return _call_menu_event
 
-    def call_ssh(self, selected_menu_item, _menu_bar):
+    def call_ssh(self, selected_menu_item, _menu_bar ):
         if selected_menu_item == 'ssh':
             _menu_bar.close_menu()
-            ssh_object.start(win_manager, stdscr, None)
+            ssh_object.start(win_manager, stdscr)
+            right_file_explorer.explorer('/')
+            self._current_panel = win_manager.set_active_panel(self._current_panel)
+            #_status_bar.refresh(_current_panel)
             self.update_all_views()
 
     def update_all_views(self):

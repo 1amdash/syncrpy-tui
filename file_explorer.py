@@ -39,7 +39,7 @@ class FileExplorer:
         self.home = self.get_home_path()
         self.path_parts = self.home._parts
         self.path_depth = len(self.path_parts)
-        self.full_path = self.join_path(self.path_parts)
+        _full_path = self.join_path(self.path_parts)
 
         self.ssh_obj = ssh_object
         self.win_manager = win_manager
@@ -56,35 +56,62 @@ class FileExplorer:
         self.position = 0
         self.scroller = 0
         self.event = None
-        self.ssh_path = None
+        self.full_path = None
+        self.ssh_full_path = '/'
         self.ssh_path_hist = ['/']
+        self.ssh_path_parts = ['/']
         self.path_info = list()
 
         self.draw_pad()
-        self.explorer(self.full_path)
+        self.explorer(_full_path)
         self.menu()
+
+    
+
+
+
+
 
     def get_home_path(self):
         return Path().home()
 
-    def explorer(self, path):
-        self.path = path
+    def use_ssh_explorer(self):
         if isinstance(self.ssh_obj, SSH):
             if self.ssh_obj.is_enabled:
-                self.use_ssh_explorer(path)
-                return
+                if self.win_manager.active_panel == 1:
+                    return True         
+
+    def explorer(self, path):
+        _ssh = None
+        while _ssh is True:
+            _ssh = self.use_ssh_explorer()
+        self.full_path = path
         path_obj = self.obj_or_str(path)
         data_list = self.walk_tree(path_obj)
         data_list = self.file_dir_iter(path_obj, data_list)
+
         data_list = self.sort_file_list(data_list)
         data_list = self.create_list_index(data_list)
         data_dict = self.list_to_dict(data_list)
         self.data = self.root_or_dot_dot(path_obj, data_dict)
 
-    def join_path(self, path_parts=None):
-        path = '/'.join(map(str, self.path_parts))
-        self.full_path = path.replace('//','/')
-        return self.full_path
+
+    def ssh_explorer(self, ssh_path):
+        self.next_ssh_path = self.get_full_path(ssh_path)
+        ssh_files_folders_dir = self.ssh_obj.sftp.listdir(self.next_ssh_path)
+        ssh_files_folders_attr = self.ssh_obj.sftp.listdir_attr(self.next_ssh_path)
+        self.ssh_get_abs_path(self.next_ssh_path)
+        data_list = self.ssh_parse_files(ssh_files_folders_dir, ssh_files_folders_attr)
+
+        data_list = self.sort_file_list(data_list)
+        data_list = self.create_list_index(data_list)
+        self.data = self.list_to_dict(data_list)
+        self.data = self.root_or_dot_dot(self.next_ssh_path, self.data)
+
+    def join_path(self, _path_parts):
+        path = '/'.join(map(str, _path_parts))
+        _full_path = path.replace('//','/')
+        return _full_path
 
     def obj_or_str(self, path):
         if isinstance(path, str):
@@ -93,15 +120,30 @@ class FileExplorer:
             return path
 
     def go_up_level(self, path):
-        if path == ('..'):
-            self.path_parts.pop()
-            self.path_depth -= 1
+        if self.use_ssh_explorer() is True:
+            if path == ('..'):
+                self.ssh_path_parts.pop()
+                self.ssh_path_depth -= 1
+                return self.ssh_path_parts
+        else:
+            if path == ('..'):
+                self.path_parts.pop()
+                self.path_depth -= 1
+                return self.path_parts
 
     def go_down_level(self, path):
-        if path.startswith('/') and len(path) > 1:
-            path = path.replace('/','')
-            self.path_parts.append(path)
-            self.path_depth += 1
+        if self.use_ssh_explorer() is True:
+            if path.startswith('/') and len(path) > 1:
+                path = path.replace('/','')
+                self.ssh_path_parts.append(path)
+                self.ssh_path_depth += 1
+                return self.ssh_path_parts
+        else:
+            if path.startswith('/') and len(path) > 1:
+                path = path.replace('/','')
+                self.path_parts.append(path)
+                self.path_depth += 1
+                return self.path_parts
 
     def file_dir_iter(self, path_obj, files_dirs):
         """parse files, identify if file is dir, get size
@@ -131,9 +173,7 @@ class FileExplorer:
             i = i + 1
         return data_list
 
-    def use_ssh_explorer(self, path):
-        if self.win_manager.active_panel == 1:
-            self.right_file_explorer.ssh_explorer(path)
+           
 
     def walk_tree(self, path):
         """get files and folders from directory"""
@@ -186,16 +226,30 @@ class FileExplorer:
             self.prev_paths[panel] = self.paths[panel]
             self.paths[oth_panel] = self.prev_paths[oth_panel]
 
-    def ssh_explorer(self, ssh_path):
-        self.next_ssh_path = self.get_full_path(ssh_path)
-        ssh_files_folders_dir = self.ssh_obj.sftp.listdir(self.next_ssh_path)
-        ssh_files_folders_attr = self.ssh_obj.sftp.listdir_attr(self.next_ssh_path)
-        self.ssh_get_abs_path(self.next_ssh_path)
-        data_list = self.ssh_parse_files(ssh_files_folders_dir, ssh_files_folders_attr)
-        data_list = self.sort_file_list(data_list)
-        data_list = self.create_list_index(data_list)
-        self.data = self.list_to_dict(data_list)
-        self.data = self.root_or_dot_dot(self.next_ssh_path, self.data)
+
+    def return_full_path(self):
+        if self.use_ssh_explorer() is True:
+        #if self.win_manager.active_panel == 1:
+         #   if self.ssh_obj.is_enabled:
+            return self.ssh_full_path
+        else:
+            return self.full_path
+        
+    def get_full_path(self, path):
+        #self.depth_test = len(path.parts)
+        if path == '/':
+            self.path_info.append('/')
+            self.depth = 0
+        elif path == ('..'):
+            if self.depth != 0:
+                
+                self.path_info.pop()
+                self.depth -= 1
+        else:
+            self.path_info.append(path)
+            self.depth += 1
+        self.full_path = ''.join(map(str, self.path_info))
+        return self.full_path.replace('//','/')
 
     def ssh_parse_files(self, files_folders_dir, files_folders_attr):
         data_list = list()
@@ -213,39 +267,48 @@ class FileExplorer:
             #item += 1
         return data_list
 
+    def return_path_parts(self):
+        if self.use_ssh_explorer() is True:
+        # if self.win_manager.active_panel == 1:
+        #     if self.ssh_obj.is_enabled:
+                return self.ssh_path_parts
+        else:
+            return self.path_parts
+
     def enter(self):
         """Changes the directory or opens file when enter key is called
 
         Expects full path string"""
         first_position = 0
         _selected_path = self.get_file_name()
+
+        #what is the full path currently
+        _full_path = self.return_full_path()
+
+        #what are the path parts
+
+        #_path_parts = self.return_path_parts()
+
+
         if self.position is first_position:
-            self.enter_select_up_level(_selected_path)
+            self.enter_select_up_level(_full_path, _selected_path)
         else:
-            self.enter_select_folder_file(_selected_path)
-        self.win_manager.upd_panel(self.win_manager.active_panel, self.full_path)
+            self.enter_select_folder_file(_full_path, _selected_path)
+        #self.win_manager.upd_panel(self.win_manager.active_panel, self.full_path)
 
-    def enter_select_up_level(self, _selected_path):
-        if self.ssh_obj:
-            if self.ssh_obj.is_enabled and self.win_manager.active_panel == 1:
-                self.par_dir = '..'
-        self.go_up_level(_selected_path)
-        _full_path = self.join_path()
-        self.set_paths(_full_path)
-        self.explorer(_full_path)
+    def enter_select_up_level(self, _full_path, _selected_path):
+        _path_parts = self.go_up_level(_selected_path)
+        _path_to_open = self.join_path(_path_parts)
+        self.set_paths(_path_to_open)
+        self.explorer(_path_to_open)
 
-    def enter_select_folder_file(self, _selected_path):
+    def enter_select_folder_file(self, _full_path, _selected_path):
         is_dir = _selected_path.startswith('/')
-        _path_to_open = self.join_path_str(self.full_path,_selected_path)
+        _path_to_open = self.join_path_str(_full_path,_selected_path)
         if is_dir:
-            if WinManager.active_panel == 1:
-                if self.ssh_obj.is_enabled:
-                    self.new_path =  self.path
-            #self.pad_refresh()
             self.position = self.scroller = 0
-            #self.paths[self.win_manager.active_panel] = _path_to_open
-            self.go_down_level(_selected_path)
-            _full_path = self.join_path()
+            _path_parts = self.go_down_level(_selected_path)
+            _path_to_open = self.join_path(_path_parts)
             self.set_paths(_path_to_open)
             self.explorer(_path_to_open)
         else:

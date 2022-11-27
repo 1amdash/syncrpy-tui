@@ -3,6 +3,7 @@ import curses
 import constants as CONST
 from navigate import navigate
 from pop_ups import PopUpNewDir
+from reset_window import ResetWindow
 
 class KeyPress:
     """Call function based on keypress
@@ -66,7 +67,7 @@ class KeyPress:
         elif event == CONST.CONST_LET_Q_LWRCSE_KEY:
             return event
         elif event == CONST.CONST_LET_X_LWRCSE_KEY:
-            self.close_ssh_key(event)
+            self.close_ssh_key()
         elif event == CONST.CONST_NUM_5_KEY:
             self.copy_key()
         elif event == CONST.CONST_LET_N_LWRCSE_KEY:
@@ -87,7 +88,7 @@ class KeyPress:
     def to_bottom_key(self,obj):
         self.obj.go_to_bottom()
 
-    def delete_key(self,obj, items, position):
+    def delete_key(self, obj, items, position):
         item = items[position][0]
         self.obj.del_selected_items(obj.full_path + item)
 
@@ -100,11 +101,13 @@ class KeyPress:
         if item is not None:
             return item
 
-    def close_ssh_key():
-        if self.ssh_obj.is_enabled:
-            self.ssh_obj.ssh.close()
-            self.ssh_obj.enabled()
-            win_manager.upd_panel()
+    def close_ssh_key(self):
+        if self.obj.ssh_obj.is_enabled:
+            self.obj.ssh_obj.ssh.close()
+            self.obj.ssh_obj.enabled()
+            self.obj.explorer(self.obj.full_path)
+            ResetWindow(self.obj.right_file_explorer)
+            #self.obj.win_manager.upd_panel(self.obj.win_manager.active_panel, )
             #right_file_explorer.explorer(right_file_explorer.path)
             #right_file_explorer.menu()
             #ResetWindow(right_file_explorer)

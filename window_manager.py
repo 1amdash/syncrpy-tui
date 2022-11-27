@@ -61,10 +61,10 @@ class WinManager:
         QueueWinRefresh(self.right_win)
         return self.right_win
 
-    def panel_headers(self):
+    def panel_headers(self, path):
         #needed to update the left and right panel headers/curent workding directory paths
         #also keeps the headers updated when switching windows
-        path = self.trim_header_path(self.path)
+        path = self.trim_header_path(path)
         if self.active_panel == 0:
             self.left_head_path = path
         else:
@@ -115,8 +115,8 @@ class WinManager:
             curses.color_pair(3)
             )
 
-    def update_headers(self, active_panel):
-        self.panel_headers()
+    def update_headers(self, active_panel, path):
+        self.panel_headers(path)
         if active_panel == 0:
             self.left_panel_sel()
         else:
@@ -134,4 +134,4 @@ class WinManager:
 
     def upd_panel(self, active_panel, path):
         self.path = path
-        self.update_headers(active_panel)
+        self.update_headers(active_panel, path)
