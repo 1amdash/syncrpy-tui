@@ -49,12 +49,16 @@ class SSH:
     def ssh_connection(self, form):
         try:
             passwd = getpass()
-            self.ssh.connect(
-                form.info[0],
-                username=form.info[1],
-                password=passwd,
-                compress=True
-                )
+            #add ctrl c try/except here
+            try:
+                self.ssh.connect(
+                    form.info[0],
+                    username=form.info[1],
+                    password=passwd,
+                    compress=True
+                    )
+            except KeyboardInterrupt:
+                return
             self.get_transport(self.ssh)
             self.sftp = self.ssh.open_sftp()
             #self.win_manager.update_headers(1, path)
@@ -67,6 +71,9 @@ class SSH:
             return return_to_curses
         except (ConnectionError, ConnectionRefusedError, Exception) as error:
             return_to_curses = self.print_error(error)
+        except KeyboardInterrupt:
+            return_to_curses = True
+            return
 
     def print_error(self, error):
         print('\n')

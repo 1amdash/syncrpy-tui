@@ -46,7 +46,7 @@ class Main:
         self._current_panel = 0
         ready_to_exit = False
         while ready_to_exit is not True:
-            #_win_manager.upd_panel(self._current_panel, _file_explorers[self._current_panel].full_path)
+            _win_manager.upd_panel(self._current_panel, _file_explorers[self._current_panel].active_path)
             Display(_file_explorers[self._current_panel])
             key_press = KeyPress(
                 _file_explorers[self._current_panel],
@@ -89,10 +89,11 @@ class Main:
         if selected_menu_item == 'ssh':
             _menu_bar.close_menu()
             ssh_object.start(win_manager, stdscr)
-            right_file_explorer.explorer('/')
             self._current_panel = win_manager.set_active_panel(self._current_panel)
-            _status_bar.update(self._current_panel, ssh_object)
+            right_file_explorer.explorer('/')
 
+            _status_bar.update(self._current_panel, ssh_object)
+            win_manager.upd_panel(self._current_panel, '/')
             self.update_all_views()
 
 
