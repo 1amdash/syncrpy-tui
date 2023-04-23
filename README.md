@@ -14,7 +14,7 @@ git clone https://github.com/1amdash/syncrpy-tui/main.git
 ## Navigate to the project directory:
 
 ```bash
-cd rsync-tfm
+cd syncrpy-tui
 ```
 
 ## Install the dependencies:
@@ -29,7 +29,7 @@ pip install ncurses
 To start the program, run the following command:
 
 ```bash
-python rsync-tui.py
+python syncrpy-tui.py
 ```
 
 Arrow Keys: Move throughout the menus
