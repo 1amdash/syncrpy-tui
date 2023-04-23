@@ -1,4 +1,4 @@
-<img width="784" alt="image" src="https://user-images.githubusercontent.com/79387780/233872359-97f2235d-e21e-4932-a63d-1c1a15f25ea1.png">
+<img width="781" alt="image" src="https://user-images.githubusercontent.com/79387780/233873063-b02125ba-24a1-4853-8a00-86e798bf4d64.png">
 
 SyncRPy - Python Terminal User Interface File Manager
 
@@ -7,30 +7,30 @@ This is a Python terminal user interface program that allows you to manage files
 Installation
 
 Clone the repository:
-'''
+```bash
 git clone https://github.com/1amdash/rsync-tui/main.git
-'''
+```
 
 Navigate to the project directory:
 
-'''
+```bash
 cd rsync-tfm
-'''
+```
 
 Install the dependencies:
 
-'''
+```bash
 pip install paramiko
 pip install ncurses
-'''
+```
 
 Usage
 
 To start the program, run the following command:
 
-'''
+```bash
 python rsync-tui.py
-'''
+```
 
 Arrow Keys: Move throughout the menus
 
