@@ -8,7 +8,7 @@ This is a Python terminal user interface program that allows you to manage files
 
 Clone the repository:
 ```bash
-git clone https://github.com/1amdash/rsync-tui/main.git
+git clone https://github.com/1amdash/syncrpy-tui/main.git
 ```
 
 ## Navigate to the project directory:
