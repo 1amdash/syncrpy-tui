@@ -1,30 +1,30 @@
-<img width="781" alt="image" src="https://user-images.githubusercontent.com/79387780/233873063-b02125ba-24a1-4853-8a00-86e798bf4d64.png">
+#SyncRPy - Python Terminal User Interface File Manager
 
-SyncRPy - Python Terminal User Interface File Manager
+<img width="781" alt="image" src="https://user-images.githubusercontent.com/79387780/233873063-b02125ba-24a1-4853-8a00-86e798bf4d64.png">
 
 This is a Python terminal user interface program that allows you to manage files and folders using a rsync, a powerful file transfer and synchronization tool. With this program, you can easily synchronize files between two directories, copy files to and from remote servers, and backup your files to a remote server.
 
-Installation
+##Installation
 
 Clone the repository:
 ```bash
 git clone https://github.com/1amdash/rsync-tui/main.git
 ```
 
-Navigate to the project directory:
+##Navigate to the project directory:
 
 ```bash
 cd rsync-tfm
 ```
 
-Install the dependencies:
+##Install the dependencies:
 
 ```bash
 pip install paramiko
 pip install ncurses
 ```
 
-Usage
+##Usage
 
 To start the program, run the following command:
 
@@ -51,18 +51,18 @@ X Key: Close SSH Connection, if established
 
 The program will launch in the terminal. You can choose from the following options:
 
-Sync files: This option allows you to synchronize files between two directories. You will be prompted to enter the source directory and the destination directory. The program will then use rsync to copy any new or modified files from the source directory to the destination directory.
+- Sync files: This option allows you to synchronize files between two directories. You will be prompted to enter the source directory and the destination directory. The program will then use rsync to copy any new or modified files from the source directory to the destination directory.
 
-Copy files to remote server: This option allows you to copy files to a remote server using rsync. You will be prompted to enter the source directory, the remote server address, and the destination directory on the remote server. The program will then use rsync to copy the files to the remote server.
+- Copy files to remote server: This option allows you to copy files to a remote server using rsync. You will be prompted to enter the source directory, the remote server address, and the destination directory on the remote server. The program will then use rsync to copy the files to the remote server.
 
-Copy files from remote server: This option allows you to copy files from a remote server using rsync. You will be prompted to enter the remote server address, the source directory on the remote server, and the destination directory on your local machine. The program will then use rsync to copy the files from the remote server to your local machine.
+- Copy files from remote server: This option allows you to copy files from a remote server using rsync. You will be prompted to enter the remote server address, the source directory on the remote server, and the destination directory on your local machine. The program will then use rsync to copy the files from the remote server to your local machine.
 
-Backup files to remote server: This option allows you to backup your files to a remote server using rsync. You will be prompted to enter the source directory on your local machine, the remote server address, and the destination directory on the remote server. The program will then use rsync to copy the files to the remote server.
+- Backup files to remote server: This option allows you to backup your files to a remote server using rsync. You will be prompted to enter the source directory on your local machine, the remote server address, and the destination directory on the remote server. The program will then use rsync to copy the files to the remote server.
 
-License
+##License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-Contributions
+##Contributions
 
 Contributions to this project are welcome. If you would like to contribute, please fork the repository and submit a pull request.
