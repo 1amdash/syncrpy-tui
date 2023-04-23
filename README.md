@@ -7,32 +7,30 @@ This is a Python terminal user interface program that allows you to manage files
 Installation
 
 Clone the repository:
-
-bash
-
-Copy code
-
+'''
 git clone https://github.com/1amdash/rsync-tui/main.git
+'''
 
 Navigate to the project directory:
 
-bash
-
-Copy code
-
+'''
 cd rsync-tfm
+'''
 
 Install the dependencies:
 
-Copy code
-
-pip install -r requirements.txt
+'''
+pip install paramiko
+pip install ncurses
+'''
 
 Usage
 
 To start the program, run the following command:
 
+'''
 python rsync-tui.py
+'''
 
 Arrow Keys: Move throughout the menus
 
@@ -50,10 +48,6 @@ N Key: Make New Directory
 
 X Key: Close SSH Connection, if established
 
-Dependencies:
-
-Curses
-Paramiko
 
 The program will launch in the terminal. You can choose from the following options:
 
